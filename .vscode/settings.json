@@ -1,0 +1,3 @@
+{
+    "pandoc.htmlOptString": "--citeproc --biblio=.pandoc/literature.bib --csl=.pandoc/apa.csl --template=.pandoc/template.html --toc"
+}
