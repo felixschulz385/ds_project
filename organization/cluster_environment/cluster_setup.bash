@@ -22,3 +22,5 @@ then
 fi
 
 setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspace)
+
+setfacl -Rm u:zxoau27:rwX,d:u:zxoau27:rwX $(ws_find ds_project)
