@@ -4,6 +4,7 @@
 echo Please choose your desired workflow
 echo "1: request resources and activate conda"
 echo "91: Add permission for user to your workspace"
+echo "92: Create new conda environment using our template"
 read function
 
 if [$function = 1]
@@ -21,4 +22,11 @@ then
     setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspace)
 fi
 
-setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspace)
+if [$function = 92]
+then
+    echo Please enter the name for the environemtn workspace...
+    read conda_name
+    conda env create --name=$conda_name --file="ds_project/ds_project/organization/cluster_environment/conda_environment.yml"
+fi
+
+setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspa
