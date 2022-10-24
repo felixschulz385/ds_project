@@ -1,35 +1,23 @@
 #!/bin/bash
-# This script serves multiple purposes and guides you through the setup of the work environment on the cluster
+# This script formalizes some setup tasks on the cluster
 
-echo Please choose your desired workflow
-echo "1: request resources and activate conda"
+echo "Please choose your desired workflow"
 echo "91: Add permission for user to your workspace"
 echo "92: Create new conda environment using our template"
 read function
 
-if [$function = 1]
+if (($function == 91))
 then
-    
-    source $( ws_find ds_project )/conda/etc/profile.d/conda.sh
-fi
-
-if [$function = 91]
-then
-    echo Please enter your workspace...
+    echo "Please enter your workspace..."
     read workspace
-    echo Please enter your username...
+    echo "Please enter your username..."
     read username
     setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspace)
 fi
 
-if [$function = 92]
+if (($function == 92))
 then
-    echo Please enter the name for the environemtn workspace...
+    echo "Please enter the name for the environment..."
     read conda_name
     conda env create --name=$conda_name --file="ds_project/ds_project/organization/cluster_environment/conda_environment.yml"
 fi
-
-setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspa
-setfacl -Rm u:$username:rwX,d:u:$username:rwX $(ws_find $workspace)
-
-setfacl -Rm u:zxoau27:rwX,d:u:zxoau27:rwX $(ws_find ds_project)

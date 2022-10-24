@@ -148,6 +148,7 @@ dependencies:
   - nbconvert-core
   - nbconvert-pandoc
   - nbformat
+  - nb_conda_kernels
   - ncurses
   - nest-asyncio
   - networkx
