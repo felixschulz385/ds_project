@@ -1,11 +1,16 @@
 ---
 title: "Data Science Project: Research Outline"
-author: Felix Schulz; Marvin Hoberg
+author: Felix Schulz; Marvin Hoberg; Jan Besler
 date: 17/10/22
 ---
 
 # To-Do
-- []
+- [] Outliers, invalid observations
+
+# Epics
+- As a municipality in Germany I want to be able to identify the best strategy for renewable energy adoption based on potential
+  - In a dashboard, I want to be able to display a suitability score for solar and wind energy
+    - Write download modules for each identified factor
 
 # Factors on the spatial diffusion of wind energy
 
@@ -22,6 +27,8 @@ This sections discusses important model parameters.
   - Geological restrictions (e.g. soil, slopes, altitude)
 - Value
   - Wind resources
+    - DWD Try
+    - ECMWF (±30kmx30km)
   - Transmission lines
   - Remoteness (distance to infrastructure)
   - Cost of land clearing (previous land cover)
@@ -33,7 +40,7 @@ This sections discusses important model parameters.
   - Households/Inhabitants
   - Industry
 - Logistics
-  - Net centrality (internal/export)
+  - Net centrality (internal/export) using OpenStreetMap net data
 - Existing Supply
   - Other facilities
 
@@ -48,7 +55,7 @@ This sections discusses important model parameters.
 - Matching model incorporating supply, demand and logistics
 
 ## Software
-- xdarray
-- rioxdarray
+- Raster data: xdarray, rioxdarray
+- OSM data: Pyrosm
 
 # Literature
