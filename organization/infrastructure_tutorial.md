@@ -18,11 +18,11 @@ Data should be saved in /pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data.
 
 ## GitHub
 
-Felix set up GitHub on the cluster to clone the repository inside his $HOME.
+I set up GitHub on the cluster to clone the repository inside my $HOME.
 
 ## Conda
 
-Felix uses a conda environment available in the workspace. Its biggest plus is that all packages and dependencies can easily be installed and updated. If using conda, remember to only install packages using conda(-forge) and not pip.
+I uses a conda environment available in the workspace. Its biggest plus is that all packages and dependencies can easily be installed and updated. If using conda, remember to only install packages using conda(-forge) and not pip.
 
 conda works by sourcing it from 
 
@@ -65,4 +65,6 @@ ssh -L 8081:<computeNodeID>:8081 <userID>@hk.scc.kit.edu
 ```
 
 Then you can access the server from http://127.0.0.1:8081 on your **local web browser**.
+
+More on the VScode server on https://www.nhr.kit.edu/userdocs/horeka/debugging_codeserver/.
 
