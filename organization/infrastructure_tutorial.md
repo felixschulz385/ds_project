@@ -61,7 +61,7 @@ You might need different hardware. It is defined in the `salloc`-call. Find docu
 The cluster will assign you a node (as in: *Nodes uc2n414 are ready for job*). Use the ID of that node and create a tunnel to the cluster on **your local command line**:
 
 ```{.bash}
-ssh -L 8081:<computeNodeID>:8081 <userID>@hk.scc.kit.edu
+ssh -L 8081:<computeNodeID>:8081 <userID>@bwunicluster.scc.kit.edu
 ```
 
 Then you can access the server from http://127.0.0.1:8081 on your **local web browser**.
