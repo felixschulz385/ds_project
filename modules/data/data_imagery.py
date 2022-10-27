@@ -99,4 +99,8 @@ class data_imagery(data_abstract):
             # export
             with open(self.storage_directory + "/" + self.state + 
                       "_" + "_".join([str(x) for x in bbox]) + ".nc", "wb") as file:
+<<<<<<< HEAD
                 tmp_xa.to_netcdf(file)
+=======
+                tmp_xa.to_netcdf(file)
+>>>>>>> 8d0f7aab62ec412c7e5b6fce1c8a131b207e5190
