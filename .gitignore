@@ -3,3 +3,5 @@
 *.pdf
 token.txt
 presentations/.Rhistory
+*.code-workspace
+*.pyc
