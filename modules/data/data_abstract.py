@@ -8,13 +8,5 @@ class data_abstract(ABC):
         pass
     
     @abstractmethod
-    def push_query(self, spatial_bounds, temporal_bounds, crs):
-        pass
-    
-    @abstractmethod
-    def run_query(self):
-        pass
-    
-    @abstractmethod
-    def export_query(self):
+    def query(self, spatial_bounds, temporal_bounds, crs):
         pass
