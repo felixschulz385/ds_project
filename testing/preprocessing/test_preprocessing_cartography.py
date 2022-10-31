@@ -13,3 +13,4 @@ def test_preprocess():
 if __name__ == "__main__":
     test_preprocess()
     print("Everything passed")
+    print("Test")
