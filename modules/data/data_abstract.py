@@ -10,3 +10,4 @@ class data_abstract(ABC):
     @abstractmethod
     def query(self, spatial_bounds, temporal_bounds, crs):
         pass
+    
