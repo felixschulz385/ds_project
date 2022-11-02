@@ -1,7 +1,9 @@
+# imports 
 import requests
 from bs4 import BeautifulSoup
 import re
 import os 
+
 
 # define base url 
 wind_data_url = "https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/Project_TRY/"
@@ -17,27 +19,36 @@ def get_links():
     soup = BeautifulSoup(r.content,'html.parser') 
     
     # find all links on web-page 
-    links = soup.findAll('a') 
+    links = soup.findAll('a')
     
-    # find all links from web-page where wind data is contained 
-    wind_links = [wind_data_url + link['href'] for link in links if bool(re.search("wind", link['href']))]  
+    # specify data to consider 
+    matches = ["wind", "pressure", "cloud"]
+    parent_links = []   # initialize empty list 
+
+    # loop over links and create list with links to download from 
+    for link in links: 
+        if any(x in link['href'] for x in matches):
+            if "vapor" in link['href']:
+                pass 
+            else:
+                parent_links.append(wind_data_url + link['href'])
      
-    return wind_links 
+    return parent_links 
 
 
-def download_files(wind_links): 
+def download_files(parent_links): 
     """Download files from links with wind data."""
     
     # initialize empty dictionary 
     download_links = {}
 
     # loop over directories which contain wind data 
-    for wind_link in wind_links: 
+    for parent_link in parent_links: 
         
-        directory_name = wind_link.split('/')[-2] 
+        directory_name = parent_link.split('/')[-2] 
         
         #create response object
-        r = requests.get(wind_link)
+        r = requests.get(parent_link)
 
         # create beautiful-soup object 
         soup = BeautifulSoup(r.content,'html.parser')
@@ -46,7 +57,7 @@ def download_files(wind_links):
         links = soup.findAll('a')
         
         # dictionary with download links as values and directory name as key 
-        download_links[directory_name] = [wind_link + link['href'] for link in links if link['href'].endswith('.nc.gz')]
+        download_links[directory_name] = [parent_link + link['href'] for link in links if link['href'].endswith('.nc.gz')]
         
     # outer loop: wind links, i.e. wind speed and wind direction  
     for key in download_links: 
@@ -56,7 +67,9 @@ def download_files(wind_links):
         try:
             # try to make directory if it does not exist
             os.mkdir(directory)
+            print(f"{directory} created.")
         except:
+            print(f"{directory} already exists.")
             pass
         
         # inner loop: file links within wind links
@@ -76,19 +89,19 @@ def download_files(wind_links):
                         if chunk: 
                             f.write(chunk) 
                 
-                print( f"{file_name} downloaded.", end='\r')
+                print( f"{file_name} downloaded.")
             
             # if file exists pass 
             else:
                 pass
-    
-    print ("All files downloaded")
+
+    print ("All files downloaded.")
     
 
 if __name__ == "__main__": 
   
     # getting all video links 
-    wind_links = get_links()
+    parent_links = get_links()
     
-    #cdownload wind data 
-    download_files(wind_links=wind_links)
+    # download data and store files 
+    download_files(parent_links=parent_links)
