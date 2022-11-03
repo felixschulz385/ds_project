@@ -27,6 +27,7 @@ cat("\014")
   
 # Load packages
 library(here)
+library(enumitem)
   
 # Load data
 # ...
@@ -57,14 +58,14 @@ Find wasted potential for renewable energies.
 \item Identify unused spaces that are not essential for nature or agriculture
 \begin{itemize}
 \item "Ears" shaped from highway slip roads
+\item How much potential is wasted through different laws of the federal states, e.g. distance rules to settlements?
 \item Sound insulation for major roads and railway tracks
-\item Quarry lakes
-\item Uneconomic agricultural land  
 \end{itemize}
 
 \item Possible extension
 \begin{itemize}
-\item How much potential is wasted through different laws of the federal states, e.g. distance rules to settlements?
+\item Quarry lakes
+\item Uneconomic agricultural land  
 \end{itemize}
 
 \end{itemize}
@@ -82,7 +83,7 @@ Current focus of the project: "Ears" shaped from highway slip roads.
 
 ## Plan
 
-\begin{itemize}
+\begin{enumerate}
 \item Collect map and geo data
 \item Identify unused spaces with a Convolutional Neural Network (CNN)
 \begin{itemize}
@@ -91,30 +92,29 @@ Current focus of the project: "Ears" shaped from highway slip roads.
 \item Potential categories: (1) The area has already been built on, (2) Small forests, (3) Free meadow area, ...
 \end{itemize}
 \end{itemize}
-\end{itemize}
+\end{enumerate}
 
 ## Plan
-
-\begin{itemize}
+\begin{enumerate}[resume]
 \item Combine CNN results with geographical and meteorological data
 \begin{itemize}
 \item Geographical details: Ground conditions and slope
 \item Meteorological details: Sunshine hours, wind speed and direction (can be extended by calculations of the wind power density)
 \end{itemize}
-\end{itemize}
+\end{enumerate}
 
 # Data
 
 ## Map and Geo Data
 
-Due to a good resolution for satellite images, we chose \textbf{Brandenburg} as a starting point.
+Due to a good resolution and a useful data format for images, we chose \textbf{Brandenburg} as a starting point.
 
 \begin{itemize}
-\item Geoportal.de: Satellite images (data from land surveying offices must be made available free of charge as of 2019)
+\item Geoportal.de: aerial images (data from land surveying offices must be made publically available as of 2019)
 
 \item OpenStreetMap: Street map data where driveways are already marked 
 \begin{itemize}
-\item Goal: Use the coordinates of driveways as filter for downloading relevant satellite images
+\item Goal: Use the coordinates of driveways as filter for downloading relevant images
 \end{itemize}
 
 \end{itemize}
@@ -137,8 +137,8 @@ Further evaluate identified candidate areas for renewable energies with:
 
 Possible extensions with data on:
 \begin{itemize}
-\item Grid centrality
-\item Impacts of climate change on the economic viability of agriculture, e.g. groundwater data
+\item Grid centrality: difficulty of connecting identified zones to existing grid
+\item evaluation of the usability of agricultural area, e.g. solar fields on low groundwater areas
 \end{itemize}
 
 # Questions for Professor Papies
