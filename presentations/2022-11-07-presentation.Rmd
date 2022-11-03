@@ -3,6 +3,8 @@ title: "Meeting 1: Renewable Energies"
 author: "Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz"
 short-author: "Renewable Energies Team"
 date: November 7, 2022
+header-includes:
+   - \usepackage{enumerate}
 output:
   beamer_presentation:
     theme: "Luebeck"
@@ -27,7 +29,6 @@ cat("\014")
   
 # Load packages
 library(here)
-library(enumitem)
   
 # Load data
 # ...
@@ -57,15 +58,20 @@ Find wasted potential for renewable energies.
 
 \item Identify unused spaces that are not essential for nature or agriculture
 \begin{itemize}
-\item "Ears" shaped from highway slip roads
-\item How much potential is wasted through different laws of the federal states, e.g. distance rules to settlements?
+\item Primary focus: "Ears" shaped from highway slip roads
+
+\item Further ideas:
+\begin{itemize}
 \item Sound insulation for major roads and railway tracks
+\item Quarry lakes
+\item Uneconomic agricultural land
+\end{itemize}
+
 \end{itemize}
 
 \item Possible extension
 \begin{itemize}
-\item Quarry lakes
-\item Uneconomic agricultural land  
+\item How much potential is wasted through different laws of the federal states, e.g. distance rules to settlements?
 \end{itemize}
 
 \end{itemize}
@@ -88,14 +94,18 @@ Current focus of the project: "Ears" shaped from highway slip roads.
 \item Identify unused spaces with a Convolutional Neural Network (CNN)
 \begin{itemize}
 \item Categorise the availability of the areas for renewable energies
-\begin{itemize}
-\item Potential categories: (1) The area has already been built on, (2) Small forests, (3) Free meadow area, ...
-\end{itemize}
+\item Potential categories:
+\begin{enumerate}
+\item The area has already been built on
+\item Small forests
+\item Free meadow area
+\item ...
+\end{enumerate}
 \end{itemize}
 \end{enumerate}
 
 ## Plan
-\begin{enumerate}[resume]
+\begin{enumerate}[3]
 \item Combine CNN results with geographical and meteorological data
 \begin{itemize}
 \item Geographical details: Ground conditions and slope
@@ -110,7 +120,7 @@ Current focus of the project: "Ears" shaped from highway slip roads.
 Due to a good resolution and a useful data format for images, we chose \textbf{Brandenburg} as a starting point.
 
 \begin{itemize}
-\item Geoportal.de: aerial images (data from land surveying offices must be made publically available as of 2019)
+\item Geoportal.de: Aerial images (data from land surveying offices must be made publically available as of 2019)
 
 \item OpenStreetMap: Street map data where driveways are already marked 
 \begin{itemize}
@@ -137,8 +147,8 @@ Further evaluate identified candidate areas for renewable energies with:
 
 Possible extensions with data on:
 \begin{itemize}
-\item Grid centrality: difficulty of connecting identified zones to existing grid
-\item evaluation of the usability of agricultural area, e.g. solar fields on low groundwater areas
+\item Grid centrality: Difficulty of connecting identified zones to existing grid
+\item Evaluation of the usability of agricultural area, e.g. solar fields on low groundwater areas
 \end{itemize}
 
 # Questions for Professor Papies
