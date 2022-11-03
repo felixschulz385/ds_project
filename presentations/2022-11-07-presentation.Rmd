@@ -52,7 +52,7 @@ Find wasted potential for renewable energies.
 
 ## General idea
 
-Find wasted potential for renewable energies.
+We are interested in the expansion of solar and wind power and would like to find suitable areas for this purpose.
 
 \begin{itemize}
 
@@ -155,6 +155,7 @@ Possible extensions with data on:
 
 \begin{enumerate}
 \item Are there other departments/chairs at the university that might have access to aerial photographs with a resolution of less than one metre? If so, is there a possibility to collaborate with them?
+\item Since one of our goals is to provide a user-friendly alternative to expert reports, we are kindly asking whether we are allowed to use German for our online application. Otherwise, there is again a language barrier for German citizens and only highly educated people receive adequate access to our results.
 \end{enumerate}
 
 <!-- FURTHER SLIDES FOR INTERIM PRESENTATION IN DECEMBER -->
