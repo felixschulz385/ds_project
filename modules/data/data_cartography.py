@@ -23,7 +23,7 @@ class data_cartography(data_abstract):
         # filtering for some selected files
         filter_files = [f"mv {self.storage_directory}/raw/dlm250.utm32s.nas_bda.kompakt/dlm250_kompakt/BDA_{x}.xml " +
                         f"{self.storage_directory}/raw/BDA_{x}.xml" 
-                        for x in [43001, 43002, 43004, 41010, 53007, 71006, 71007, 71011, 75009]]
+                        for x in [43001, 43002, 43004, 41010, 53002, 53007, 71006, 71007, 71011, 75009]]
         for command in filter_files:
             system(command)
         # removing zip and unzipped folder
