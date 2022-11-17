@@ -1,7 +1,13 @@
 {
     "pandoc.htmlOptString": "--citeproc --biblio=research/.pandoc/literature.bib --csl=research/.pandoc/apa.csl --template=research/.pandoc/template.html --toc",
     "code-runner.executorMapByFileExtension": {
+<<<<<<< HEAD
         ".md": 
         "cd $dir && pandoc $fileName -o $fileNameWithoutExt.html --citeproc --biblio=research/.pandoc/literature.bib --csl=research/.pandoc/apa.csl --template=research/.pandoc/template.html --css=research/.pandoc/template.css --toc && open $fileNameWithoutExt.html"
     }
+=======
+        ".md": "cd $dir && pandoc $fileName -o $fileNameWithoutExt.html --citeproc --biblio=.pandoc/literature.bib --csl=.pandoc/apa.csl --template=.pandoc/template.html --css=.pandoc/template.css --toc && open $fileNameWithoutExt.html"
+    },
+    "python.analysis.typeCheckingMode": "basic"
+>>>>>>> d6182b0 (redoing and finishing Mastr data download)
 }
