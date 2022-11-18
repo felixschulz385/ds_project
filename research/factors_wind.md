@@ -1,11 +1,7 @@
 ---
-title: "Data Science Project: Research Outline"
-author: Felix Schulz; Marvin Hoberg; Jan Besler
+title: "Factors for the placement of wind turbines"
 date: 17/10/22
 ---
-
-# To-Do
-- [] Outliers, invalid observations
 
 # Epics
 - As a municipality in Germany I want to be able to identify the best strategy for renewable energy adoption based on potential
@@ -48,14 +44,5 @@ This sections discusses important model parameters.
 - Political dimension
 - Legal Dimension (lawsuits)
 
-# Methodology
-
-## Central ideas
-- Placement model with prediction
-- Matching model incorporating supply, demand and logistics
-
-## Software
-- Raster data: xdarray, rioxdarray
-- OSM data: Pyrosm
 
 # Literature

@@ -98,8 +98,8 @@ class data_imagery(data_abstract):
             tmp_xd = Dataset(data_vars = {"red": (["x", "y"], tmp_np[:,:,0]),
                                           "green": (["x", "y"], tmp_np[:,:,1]),
                                           "blue": (["x", "y"], tmp_np[:,:,2])},
-                             coords = {"x": (["x"], arange(tmp_np.shape[0]) * .2 + query_bbox[0]),
-                                       "y": (["y"], arange(tmp_np.shape[1]) * .2 + query_bbox[1])})
+                             coords = {"x": (["x"], arange(tmp_np.shape[0]) * self.pixel_density + query_bbox[0]),
+                                       "y": (["y"], arange(tmp_np.shape[1]) * self.pixel_density + query_bbox[1])})
             # convert type
             tmp_xd = tmp_xd.astype("int")
             # set output crs
