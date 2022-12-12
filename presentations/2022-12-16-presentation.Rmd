@@ -1,0 +1,174 @@
+---
+title: "Interim Presentation: Renewable Energies"
+author: "Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz"
+short-author: "Renewable Energies Team"
+date: December 16, 2022
+header-includes:
+   - \usepackage{enumerate}
+output:
+  beamer_presentation:
+    theme: "Luebeck"
+    colortheme: "whale"
+    fonttheme: "structurebold"
+    slide_level: 2
+    toc: true
+    incremental: true
+    fig_width: 12
+    fig_height: 6
+    fig_caption: true
+---
+
+```{r,  echo=FALSE, cache=FALSE, results=F, warning=FALSE, comment=FALSE, message=F}
+#==============================================================================#
+#   PART 0: SETUP
+#==============================================================================#
+
+# Clear environment and console
+rm(list=ls())
+cat("\014")
+  
+# Load packages
+library(here)
+  
+# Load data
+# ...
+```  
+
+# Motivation
+
+## General idea
+
+Find wasted potential for renewable energies.
+
+\begin{itemize}
+
+\item Illustrate potentials for renewable energies in a user-friendly way
+\begin{itemize}
+\item Online application as information desk for municipalities and citizens
+\item Alternative to complex expert reports
+\end{itemize}
+
+\end{itemize}
+
+## General idea
+
+We are interested in the expansion of solar power and would like to find suitable areas for this purpose.
+Suitable areas are unused spaces that are not essential for nature or agriculture. 
+
+Primary focus: "Ears" shaped from highway slip roads.
+
+```{r echo=FALSE, out.width='85%', fig.cap="Solar Park Lustnauer Ohren"}
+knitr::include_graphics(here::here('presentations/fig/lustnauer_ohren.jpg'))
+```
+
+## General idea
+
+Our contribution:
+
+\begin{itemize}
+\item Assess economic utilisation of the identified unused spaces
+\begin{itemize}
+\item Construction costs vs. Electricity feed
+\end{itemize}
+\item Assess scalability of idea
+\item Tangibility of the general idea
+\end{itemize}
+
+<!--- Probleme (Wirtschaftlichkeit & Gesetzeslage) und Potentiale --->
+
+# Plan
+
+## Plan
+
+\begin{enumerate}
+\item Collect map and geo data
+\item Identify unused spaces
+\begin{itemize}
+\item Evaluate the suitability of the "ears" for PV
+\item Classifications identified with a neural network:
+\begin{enumerate}
+\item The area has already been built on
+\item The area is overgrown (trees, bushes, ...)
+\item Vacant meadow area
+\item ...
+\end{enumerate}
+\end{itemize}
+\end{enumerate}
+
+## Plan
+\begin{enumerate}[3]
+\item Combine neural network results (landcover) with geographical and meteorological data
+\begin{itemize}
+\item Distance to grid
+\item Meteorological details: Sunshine hours 
+\item Sky alignment of the road
+\item Geographical details: Ground conditions and slope
+\end{itemize}
+\end{enumerate}
+
+# Data
+
+## Data acquisition: Map and Geo Data
+
+Due to a good resolution and a useful data format for images, we chose \textbf{Brandenburg} as a starting point.
+
+\begin{itemize}
+\item Geoportal.de: Aerial images (data from land surveying offices must be made publically available as of 2019)
+
+\item OpenStreetMap: Street map data where driveways are already marked 
+\begin{itemize}
+\item Use the coordinates of driveways as filter for downloading relevant images
+\end{itemize}
+
+\end{itemize}
+
+## Data on Motorway Slip Roads
+
+```{r echo=FALSE, out.width='33%', fig.cap="Motorway Slip Roads in Germany"}
+knitr::include_graphics(here::here('presentations/fig/motorway_access.jpg'))
+```
+We expand these coordinates by data on slip roads to federal highways.
+
+## Geographical and Meteorological Data
+
+Further evaluate identified candidate areas for renewable energies with:
+
+\begin{itemize}
+\item MaStR: Grid centrality (difficulty of connecting identified zones to existing grid)
+\item German Meteorological Service: Sunshine hours (incl. cloud coverage and season)
+\item Geoportal.de: Topographical data
+\end{itemize}
+
+## Data preparation/ validation
+
+TO DO: Felix Bildchen
+
+## Data analysis
+
+TO DO: Marvin & Yvette (Trainingsdaten und ResNet)
+
+Easy solution: Pre-trained Convolutional Neural Network (CNN)
+Two-step identification (Boxes + Sequencing of relevant shapes)
+Harder solution: Self-trained Convolutional Neural Network (CNN)
+Pixel-specific identification with data from competition
+
+## Data visualization
+
+TO DO: Jan htlm
+
+Map with identified "ears"
+
+Requirements:
+\begin{itemize}
+\item Location of ears in a selected area
+\item Heat map: Colour code for suitability of ears (rating)
+\item Features: Size of ear, classification of land coverage, solar hours, grid centrality, ...
+\end{itemize}
+
+# Outlook/ Questions
+
+Any experience with landcover classification (remote sensing, image pixel level) based on a pre-trained neural network?
+\begin{itemize}
+\item Reference database for neural networks on this objective?
+\item Access to pre-trained neural networks free of charge?
+\end{itemize}

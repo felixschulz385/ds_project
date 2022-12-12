@@ -1,0 +1,186 @@
+---
+title: "Meeting 1: Renewable Energies"
+author: "Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz"
+short-author: "Renewable Energies Team"
+date: November 7, 2022
+header-includes:
+   - \usepackage{enumerate}
+output:
+  beamer_presentation:
+    theme: "Luebeck"
+    colortheme: "whale"
+    fonttheme: "structurebold"
+    slide_level: 2
+    toc: true
+    incremental: true
+    fig_width: 12
+    fig_height: 6
+    fig_caption: true
+---
+
+```{r,  echo=FALSE, cache=FALSE, results=F, warning=FALSE, comment=FALSE, message=F}
+#==============================================================================#
+#   PART 0: SETUP
+#==============================================================================#
+
+# Clear environment and console
+rm(list=ls())
+cat("\014")
+  
+# Load packages
+library(here)
+  
+# Load data
+# ...
+```  
+
+# Motivation
+
+## General idea
+
+Find wasted potential for renewable energies.
+
+\begin{itemize}
+
+\item Illustrate potentials for renewable energies in a user-friendly way
+\begin{itemize}
+\item Online application as information desk for municipalities and citizens
+\item Alternative to complex expert reports
+\end{itemize}
+
+\end{itemize}
+
+## General idea
+
+We are interested in the expansion of solar and wind power and would like to find suitable areas for this purpose.
+
+\begin{itemize}
+
+\item Identify unused spaces that are not essential for nature or agriculture
+\begin{itemize}
+\item Primary focus: "Ears" shaped from highway slip roads
+
+\item Further ideas:
+\begin{itemize}
+\item Sound insulation for major roads and railway tracks
+\item Quarry lakes
+\item Uneconomic agricultural land
+\end{itemize}
+
+\end{itemize}
+
+\item Possible extension
+\begin{itemize}
+\item How much potential is wasted through different laws of the federal states, e.g. distance rules to settlements?
+\end{itemize}
+
+\end{itemize}
+
+## Inspiration
+
+General goal: Identify unused spaces that are not essential for nature or agriculture.
+
+```{r echo=FALSE, out.width='85%', fig.cap="Solar Park Lustnauer Ohren"}
+knitr::include_graphics(here::here('presentations/fig/lustnauer_ohren.jpg'))
+```
+Current focus of the project: "Ears" shaped from highway slip roads.
+
+# Plan
+
+## Plan
+
+\begin{enumerate}
+\item Collect map and geo data
+\item Identify unused spaces with a Convolutional Neural Network (CNN)
+\begin{itemize}
+\item Categorise the availability of the areas for renewable energies
+\item Potential categories:
+\begin{enumerate}
+\item The area has already been built on
+\item Small forests
+\item Free meadow area
+\item ...
+\end{enumerate}
+\end{itemize}
+\end{enumerate}
+
+## Plan
+\begin{enumerate}[3]
+\item Combine CNN results with geographical and meteorological data
+\begin{itemize}
+\item Geographical details: Ground conditions and slope
+\item Meteorological details: Sunshine hours, wind speed and direction (can be extended by calculations of the wind power density)
+\end{itemize}
+\end{enumerate}
+
+# Data
+
+## Map and Geo Data
+
+Due to a good resolution and a useful data format for images, we chose \textbf{Brandenburg} as a starting point.
+
+\begin{itemize}
+\item Geoportal.de: Aerial images (data from land surveying offices must be made publically available as of 2019)
+
+\item OpenStreetMap: Street map data where driveways are already marked 
+\begin{itemize}
+\item Goal: Use the coordinates of driveways as filter for downloading relevant images
+\end{itemize}
+
+\end{itemize}
+
+## Data on Motorway Slip Roads
+
+```{r echo=FALSE, out.width='33%', fig.cap="Motorway Slip Roads in Germany"}
+knitr::include_graphics(here::here('presentations/fig/motorway_access.jpg'))
+```
+We would like to expand these coordinates by data on slip roads to federal highways.
+
+## Geographical and Meteorological Data
+
+Further evaluate identified candidate areas for renewable energies with:
+
+\begin{itemize}
+\item Geoportal.de: Topographical data
+\item German Meteorological Service: Sunshine hours, wind power density (wind speed, wind direction, density of air)
+\end{itemize}
+
+Possible extensions with data on:
+\begin{itemize}
+\item Grid centrality: Difficulty of connecting identified zones to existing grid
+\item Evaluation of the usability of agricultural area, e.g. solar fields on low groundwater areas
+\end{itemize}
+
+# Questions for Professor Scholten
+
+\begin{enumerate}
+\item Do you have access to orthophotography with better ground resolution for  Baden-Württemberg, Bremen, Saarland?
+\item Do you have access to topographical data (digital terrain model) that does not mark trees as uneven?
+\item Do you have experience with neural network models for the classification of surface?
+\item Do you have any ideas on how to calculate the land yield in order to weigh up whether it is worth exchanging agriculture for renewable energies?
+\item Angle of sunlight?
+\end{enumerate}
+
+<!-- FURTHER SLIDES FOR INTERIM PRESENTATION IN DECEMBER -->
+
+<!-- 
+# First Steps
+
+## Data acquisition
+
+## Data preparation
+
+## Data validation
+
+## Data analysis
+
+## Data visualization
+
+# Outlook
+
+## Presentation of the result
+
+## Automation
+
+## Version control and collaboration
+-->
