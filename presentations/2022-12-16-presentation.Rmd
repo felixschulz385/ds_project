@@ -81,15 +81,15 @@ Our contribution:
 ## Plan
 
 \begin{enumerate}
-\item Collect map and geo data
-\item Identify unused spaces
+\item Collect geo data
+\item Identify "ears" accross Germany
 \begin{itemize}
-\item Evaluate the suitability of the "ears" for PV
-\item Classifications identified with a neural network:
+\item Evaluate the suitability of these "ears" for PV
+\item Project core: Land cover classification using a neural network:
 \begin{enumerate}
-\item The area has already been built on
-\item The area is overgrown (trees, bushes, ...)
-\item Vacant meadow area
+\item Other usage: the area has already been built on
+\item Added cost: the area is overgrown (trees, bushes, ...)
+\item Ideal: Vacant meadow area
 \item ...
 \end{enumerate}
 \end{itemize}
@@ -97,7 +97,7 @@ Our contribution:
 
 ## Plan
 \begin{enumerate}[3]
-\item Combine neural network results (landcover) with geographical and meteorological data
+\item Combine neural network results with geographical and meteorological data
 \begin{itemize}
 \item Distance to grid
 \item Meteorological details: Sunshine hours 
@@ -108,40 +108,70 @@ Our contribution:
 
 # Data
 
-## Data acquisition: Map and Geo Data
+## Data acquisition: Geo Data
 
-Due to a good resolution and a useful data format for images, we chose \textbf{Brandenburg} as a starting point.
+As a starting point we choose \textbf{Brandenburg}
 
 \begin{itemize}
-\item Geoportal.de: Aerial images (data from land surveying offices must be made publically available as of 2019)
-
-\item OpenStreetMap: Street map data where driveways are already marked 
-\begin{itemize}
-\item Use the coordinates of driveways as filter for downloading relevant images
-\end{itemize}
-
+\item OpenStreetMap: Street map data in which driveways are clearly identified 
+\item Geoportal.de: Aerial images %(data from land surveying offices must be made publically available as of 2019)
+  \begin{itemize}
+    \item Individual requests revealed cost barriers in three states
+    \item Use the coordinates of driveways as filter for downloading relevant images
+  \end{itemize}
 \end{itemize}
 
 ## Data on Motorway Slip Roads
 
-```{r echo=FALSE, out.width='33%', fig.cap="Motorway Slip Roads in Germany"}
-knitr::include_graphics(here::here('presentations/fig/motorway_access.jpg'))
+```{r echo=FALSE, out.width='33%', fig.cap="Motorway Slip Roads in Brandenburg"}
+knitr::include_graphics(here::here('presentations/fig/brandenburg_driveways.jpg'))
 ```
-We expand these coordinates by data on slip roads to federal highways.
 
-## Geographical and Meteorological Data
+## Data preparation/validation
+
+\begin{figure}
+\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_1.jpg}
+\vline
+\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_2.jpg}
+\vline
+\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_3.jpg}
+\vline
+\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_4.jpg}
+\vline
+\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_5.jpg}
+\caption{Example of preprocessing: Matching and IDs}
+\end{figure}
+
+## Data preparation/validation
+
+\begin{figure}
+\includegraphics[width = .45\textwidth]{presentations/fig/driveways_example_6.jpg}
+\hspace{1pt} \vline \hspace{1pt}
+\includegraphics[width = .45\textwidth]{presentations/fig/driveways_example_7.jpg}
+\caption{Example of preprocessing: Polygons and Imagery}
+\end{figure}
+
+## Data preparation/validation Pipeline
+
+```{r echo=FALSE, out.width='100%', fig.cap="The Driveway Data Pipeline"}
+knitr::include_graphics(here::here('presentations/fig/ml_pipeline.jpeg'))
+```
+
+## Economic Model: Geographical and Meteorological Data
 
 Further evaluate identified candidate areas for renewable energies with:
 
 \begin{itemize}
 \item MaStR: Grid centrality (difficulty of connecting identified zones to existing grid)
 \item German Meteorological Service: Sunshine hours (incl. cloud coverage and season)
-\item Geoportal.de: Topographical data
+\item SRTM: Topographical data
 \end{itemize}
 
-## Data preparation/ validation
+## Economic Model
 
-TO DO: Felix Bildchen
+```{r echo=FALSE, out.width='60%', fig.cap="The Economic Model in Summary"}
+knitr::include_graphics(here::here('presentations/fig/economic_model.jpeg'))
+```
 
 ## Data analysis
 
