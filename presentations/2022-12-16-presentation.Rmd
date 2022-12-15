@@ -40,18 +40,6 @@ library(here)
 
 Find wasted potential for renewable energies.
 
-\begin{itemize}
-
-\item Illustrate potentials for renewable energies in a user-friendly way
-\begin{itemize}
-\item Online application as information desk for municipalities and citizens
-\item Alternative to complex expert reports
-\end{itemize}
-
-\end{itemize}
-
-## General idea
-
 We are interested in the expansion of solar power and would like to find suitable areas for this purpose.
 Suitable areas are unused spaces that are not essential for nature or agriculture. 
 
@@ -60,6 +48,18 @@ Primary focus: "Ears" shaped from highway slip roads.
 ```{r echo=FALSE, out.width='85%', fig.cap="Solar Park Lustnauer Ohren"}
 knitr::include_graphics(here::here('presentations/fig/lustnauer_ohren.jpg'))
 ```
+
+## General idea
+
+\begin{itemize}
+
+\item Illustrate potentials for renewable energies (PV) in a user-friendly way
+\begin{itemize}
+\item Online application as information desk for municipalities and citizens
+\item Alternative to complex expert reports
+\end{itemize}
+
+\end{itemize}
 
 ## General idea
 
