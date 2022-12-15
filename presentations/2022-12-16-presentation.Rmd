@@ -206,15 +206,18 @@ Wambugu, N., Chen, Y., Xiao, Z., Wei, M., Bello, S. A., Junior, J. M., & Li, J. 
 
 ## Data visualization
 
-TO DO: Jan htlm
-
-Map with identified "ears"
-
-Requirements:
+Map with leaflet in a greppo dashboard
 \begin{itemize}
-\item Location of ears in a selected area
-\item Heat map: Colour code for suitability of ears (rating)
-\item Features: Size of ear, classification of land coverage, solar hours, grid centrality, ...
+  \item fast 
+  \item open-source
+\end{itemize}
+
+To-Do:
+\begin{itemize}
+  \item different Layers to show different information
+  \item Heat map: Colour code for suitability of ears (rating)
+  \item Features: Size of ear, classification of land coverage, solar hours, grid centrality, ...
+  \item Integration into greppo
 \end{itemize}
 
 # Outlook/ Questions
