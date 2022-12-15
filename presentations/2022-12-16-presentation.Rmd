@@ -5,6 +5,7 @@ short-author: "Renewable Energies Team"
 date: December 16, 2022
 header-includes:
    - \usepackage{enumerate}
+   - \usepackage{setspace}
 output:
   beamer_presentation:
     theme: "Luebeck"
@@ -181,34 +182,29 @@ knitr::include_graphics(here::here('presentations/fig/economic_model.jpeg'))
 
 ## Data analysis: Neural Networks
 
-```{r echo=FALSE, out.width='60%', fig.cap="Tasks in Computer Vision"}
+```{r echo=FALSE, out.width='75%', fig.cap="Tasks in Computer Vision"}
 knitr::include_graphics(here::here('presentations/fig/tasks_comp_vision.png'))
 ```
 
-\begin{tiny}
-Figure credit: Taspinar, A. (2017, Dec 4) Using Convolutional Neural Networks to detect features in satellite images. https://ataspinar.com/2017/12/04/using-convolutional-neural-networks-to-detect-features-in-sattelite-images/
-\end{tiny}
+\tiny Figure credit: Taspinar, A. (2017, Dec 4) Using Convolutional Neural Networks to detect features in satellite images. \url{https://ataspinar.com/2017/12/04/using-convolutional-neural-networks-to-detect-features-in-sattelite-images/}
 
 ## Data analysis: Neural Networks
 
-```{r echo=FALSE, out.width='60%', fig.cap="Segmentation: Pixel-Level Image Classification"}
+```{r echo=FALSE, out.width='90%', fig.cap="Segmentation: Pixel-Level Image Classification"}
 knitr::include_graphics(here::here('presentations/fig/segmentation.png'))
 ```
 
-\begin{tiny}
-Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). https://wooono.tistory.com/267
-\end{tiny}
+\tiny Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
 
 ## Data analysis: Neural Networks
 
-```{r echo=FALSE, out.width='30%', fig.cap="Classification Results for Images of Vaihingen: (a) input image tile, (b)ground truth, (c) prediction"}
+```{r echo=FALSE, out.width='35%', fig.cap="Classification Results for Images of Vaihingen: (a) input image tile, (b) ground truth, (c) prediction"}
 knitr::include_graphics(here::here('presentations/fig/vaih_classfication.jpg'))
 ```
 
-\begin{tiny}
-Figure credit:
-Wambugu, N., Chen, Y., Xiao, Z., Wei, M., Bello, S. A., Junior, J. M., \& Li, J. (2021). A hybrid deep convolutional neural network for accurate land cover classification. International Journal of Applied Earth Observation and Geoinformation, 103, 102515. https://doi.org/10.1016/j.jag.2021.102515.
-\end{tiny}
+\parskip=-5pt
+
+\tiny Figure credit: Wambugu, N., Chen, Y., Xiao, Z., Wei, M., Bello, S. A., Junior, J. M., \& Li, J. (2021). A hybrid deep convolutional neural network for accurate land cover classification. International Journal of Applied Earth Observation and Geoinformation, 103, 102515. \url{https://doi.org/10.1016/j.jag.2021.102515}
 
 ## Data visualization
 
