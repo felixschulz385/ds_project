@@ -38,14 +38,18 @@ library(here)
 
 ## General idea
 
-Find wasted potential for renewable energies.
+\begin{itemize}
 
-We are interested in the expansion of solar power and would like to find suitable areas for this purpose.
-Suitable areas are unused spaces that are not essential for nature or agriculture. 
+\item Find wasted potential for renewable energies.
 
-Primary focus: "Ears" shaped from highway slip roads.
+%We are interested in the expansion of solar power and would like to find suitable areas for this purpose.
+\item Use unused spaces that are not essential for nature or agriculture for solar power 
 
-```{r echo=FALSE, out.width='85%', fig.cap="Solar Park Lustnauer Ohren"}
+\item Primary focus: "Ears" shaped from highway slip roads.
+
+\end{itemize}
+
+```{r echo=FALSE, out.width='65%', fig.cap="Solar Park Lustnauer Ohren"}
 knitr::include_graphics(here::here('presentations/fig/lustnauer_ohren.jpg'))
 ```
 
@@ -130,24 +134,24 @@ knitr::include_graphics(here::here('presentations/fig/brandenburg_driveways.jpg'
 ## Data preparation/validation
 
 \begin{figure}
-\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_1.jpg}
+\includegraphics[width = .18\textwidth]{fig/driveways_example_1.jpg}
 \vline
-\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_2.jpg}
+\includegraphics[width = .18\textwidth]{fig/driveways_example_2.jpg}
 \vline
-\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_3.jpg}
+\includegraphics[width = .18\textwidth]{fig/driveways_example_3.jpg}
 \vline
-\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_4.jpg}
+\includegraphics[width = .18\textwidth]{fig/driveways_example_4.jpg}
 \vline
-\includegraphics[width = .18\textwidth]{presentations/fig/driveways_example_5.jpg}
+\includegraphics[width = .18\textwidth]{fig/driveways_example_5.jpg}
 \caption{Example of preprocessing: Matching and IDs}
 \end{figure}
 
 ## Data preparation/validation
 
 \begin{figure}
-\includegraphics[width = .45\textwidth]{presentations/fig/driveways_example_6.jpg}
+\includegraphics[width = .45\textwidth]{fig/driveways_example_6.jpg}
 \hspace{1pt} \vline \hspace{1pt}
-\includegraphics[width = .45\textwidth]{presentations/fig/driveways_example_7.jpg}
+\includegraphics[width = .45\textwidth]{fig/driveways_example_7.jpg}
 \caption{Example of preprocessing: Polygons and Imagery}
 \end{figure}
 
@@ -173,35 +177,37 @@ Further evaluate identified candidate areas for renewable energies with:
 knitr::include_graphics(here::here('presentations/fig/economic_model.jpeg'))
 ```
 
+# Analysis
+
 ## Data analysis: Neural Networks
 
 ```{r echo=FALSE, out.width='60%', fig.cap="Tasks in Computer Vision"}
-knitr::include_graphics(here::here('presentations/fig/tasks_comp_vision'))
+knitr::include_graphics(here::here('presentations/fig/tasks_comp_vision.png'))
 ```
 
 \begin{tiny}
 Figure credit: Taspinar, A. (2017, Dec 4) Using Convolutional Neural Networks to detect features in satellite images. https://ataspinar.com/2017/12/04/using-convolutional-neural-networks-to-detect-features-in-sattelite-images/
 \end{tiny}
 
-# Data analysis: Neural Networks
+## Data analysis: Neural Networks
 
 ```{r echo=FALSE, out.width='60%', fig.cap="Segmentation: Pixel-Level Image Classification"}
-knitr::include_graphics(here::here('presentations/fig/segmentation'))
+knitr::include_graphics(here::here('presentations/fig/segmentation.png'))
 ```
 
 \begin{tiny}
 Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). https://wooono.tistory.com/267
 \end{tiny}
 
-# Data analysis: Neural Networks
+## Data analysis: Neural Networks
 
-```{r echo=FALSE, out.width='60%', fig.cap="Classification Results for Images of Vaihingen: (a) input image tile, (b)ground truth, (c) prediction"}
-knitr::include_graphics(here::here('presentations/fig/vaih_classfication'))
+```{r echo=FALSE, out.width='30%', fig.cap="Classification Results for Images of Vaihingen: (a) input image tile, (b)ground truth, (c) prediction"}
+knitr::include_graphics(here::here('presentations/fig/vaih_classfication.jpg'))
 ```
 
 \begin{tiny}
 Figure credit:
-Wambugu, N., Chen, Y., Xiao, Z., Wei, M., Bello, S. A., Junior, J. M., & Li, J. (2021). A hybrid deep convolutional neural network for accurate land cover classification. International Journal of Applied Earth Observation and Geoinformation, 103, 102515. https://doi.org/10.1016/j.jag.2021.102515.
+Wambugu, N., Chen, Y., Xiao, Z., Wei, M., Bello, S. A., Junior, J. M., \& Li, J. (2021). A hybrid deep convolutional neural network for accurate land cover classification. International Journal of Applied Earth Observation and Geoinformation, 103, 102515. https://doi.org/10.1016/j.jag.2021.102515.
 \end{tiny}
 
 ## Data visualization
