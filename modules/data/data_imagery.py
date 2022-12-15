@@ -2,19 +2,20 @@ from modules.data.data_abstract import data_abstract
 from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
 from bs4 import BeautifulSoup
-from numpy import asarray, expand_dims, arange
+from numpy import array, asarray, expand_dims, arange, ceil, floor
+from time import sleep
 from io import BytesIO
 from PIL import Image
 from xarray import Dataset
+import rioxarray
 from geopandas import GeoSeries
 from shapely.geometry import Polygon
 
-
-class data_imagery(data_abstract):
+class data_imagery(data_abstract): #
     
     # establishes a connection to the wms service           
     def __establish_wms_connection(self):
-        self.wms = WebMapService(self.wms_service, version='1.1.1')
+        self.wms = WebMapService(self.wms_service, version='1.3.0')
         print([self.wms.identification.title, self.wms.identification.abstract])
         
     # establishes a connection to the wfs service           
@@ -34,7 +35,51 @@ class data_imagery(data_abstract):
     def __calculate_image_size(self, bbox):
         return([((bbox[2] - bbox[0]) / self.pixel_density), 
                 ((bbox[3] - bbox[1]) / self.pixel_density)])
+    
+    # calculate parameters for chunked query
+    def __get_split_parameters(self, bbox):
+        # calculate image size
+        xlim = (bbox[2] - bbox[0]) / self.pixel_density
+        ylim = (bbox[3] - bbox[1]) / self.pixel_density
         
+        # catch the special case when a null query would be sent
+        if xlim % self.size_restriction[0] == 0: xlim += 10
+        if ylim % self.size_restriction[1] == 0: ylim += 10
+        
+        ## get the relative image sizes for the splits
+        # calculate lower edges
+        # these start at 0 and increase by the maximum pixel amount for as many times as necessary
+        x_mins = [x * self.size_restriction[0] for x in range(int(xlim // self.size_restriction[0]) + 1)]
+        y_mins = [y * self.size_restriction[1] for y in range(int(ylim // self.size_restriction[1]) + 1)]
+        # calculate upper edges
+        # these are the lower edges and the actual upper edge
+        x_maxs = [x * self.size_restriction[0] for x in range(int(xlim // self.size_restriction[0]) + 1)][1:] +\
+          [(xlim // self.size_restriction[0]) * self.size_restriction[0] + (xlim % self.size_restriction[0])]
+        y_maxs = [y * self.size_restriction[1] for y in range(int(ylim // self.size_restriction[1]) + 1)][1:] +\
+          [(ylim // self.size_restriction[1]) * self.size_restriction[1] + (ylim % self.size_restriction[1])]
+        
+        # turn into bbox format
+        splits = array([[[None] * 4] * len(y_mins)] * len(x_mins))
+        for i in range(len(x_mins)):
+            for j in range(len(y_mins)):
+                splits[i][j] = [x_mins[i], y_mins[j], x_maxs[i], y_maxs[j]]
+           
+        # offset and fix to bboxes
+        query_bboxes = [[[splits[i][j][0] * self.pixel_density + bbox[0],
+                          splits[i][j][1] * self.pixel_density + bbox[1],
+                          splits[i][j][2] * self.pixel_density + bbox[0],
+                          splits[i][j][3] * self.pixel_density + bbox[1]] for j in range(len(y_mins))] for i in range(len(x_mins))]
+        
+        # bring splits into PIL format (origin in top-left)
+        PIL_coords = array([[[None] * 2] * len(y_mins)] * len(x_mins))
+        for i in range(len(x_mins)):
+            for j in range(len(y_mins)):
+                PIL_coords[i][j] = [splits[i][j][0], ylim - splits[i][j][3]]
+                
+        # return query shape
+        query_shape = (len(x_mins), len(y_mins))
+        
+        return(PIL_coords, query_bboxes, query_shape)
     
     # the constructor
     def __init__(self, state, 
@@ -52,6 +97,7 @@ class data_imagery(data_abstract):
                 self.import_crs = 25833
                 self.wms_service = "https://isk.geobasis-bb.de/mapproxy/dop20_2016_2018/service/wms?"
                 self.wms_layer = "dop20_bebb_2016_2018_farbe"
+                self.size_restriction = (6000, 6000) # actual limits are at 8000,8000; for tiling purposes decreased to 6000,6000
                 self.wfs_service = "https://isk.geobasis-bb.de/ows/aktualitaeten_wfs?"
                 self.wfs_typename = "app:dop20rgbi_2016_2018_single"
                 self.wfs_datepos = "app:creationdate"
@@ -59,12 +105,13 @@ class data_imagery(data_abstract):
         self.__establish_wms_connection()
         self.__establish_wfs_connection()
     
-    # adds a bbox into the query stack
-    def query(self, spatial_bounds, temporal_bounds = "available", crs = 25833):
+    def query(self, spatial_bounds, ids, offset = 20, crs = 25833):
         
         n = 0
         
         for bbox in spatial_bounds:
+            
+            print(f"--- Querying for image {n+1} ---")
             
             # project the bbox if necessary
             if(crs != self.import_crs):
@@ -72,34 +119,65 @@ class data_imagery(data_abstract):
             else:
                 query_bbox = bbox
             
-            # query the imagery from the WMS service
-            img = self.wms.getmap(
-                layers = [self.wms_layer],
-                srs = "EPSG:" + str(self.import_crs),
-                bbox = query_bbox,
-                size = self.__calculate_image_size(query_bbox),
-                format = "image/jpeg").read()
+            # extend image boundaries
+            query_bbox[[0,1]] = floor(query_bbox[[0,1]] - offset)
+            query_bbox[[2,3]] = ceil(query_bbox[[2,3]] + offset)
             
-            # query timestamp from the WFS service
-            wfs_response = self.wfs.getfeature(typename = self.wfs_typename,
-                                               bbox = query_bbox, 
-                                               srsname = "EPSG:" + str(self.import_crs)).read()
-            timestamp = BeautifulSoup(wfs_response, features = "xml").find(self.wfs_datepos).text
+            # calculate total size
+            total_size = self.__calculate_image_size(query_bbox)
+            
+            # calculate splits if necessary
+            PIL_coords, query_bboxes, query_shape = self.__get_split_parameters(query_bbox)
+            
+            print(query_shape)
+            
+            # prepare output vectors
+            imgs = array([[None] * query_shape[1]] * query_shape[0])
+            timestamps = array([[None] * query_shape[1]] * query_shape[0])
+            
+            for i in range(query_shape[0]):
+                for j in range(query_shape[1]):
+                    
+                    print(str(i) + "_" + str(j))
+                    
+                    sleep(.5)
+                    
+                    query_bbox = query_bboxes[i][j]
+                    
+                    # query the imagery from the WMS service
+                    imgs[i][j] = self.wms.getmap(
+                        layers = [self.wms_layer],
+                        srs = "EPSG:" + str(self.import_crs),
+                        bbox = query_bbox,
+                        size = self.__calculate_image_size(query_bbox),
+                        format = "image/jpeg").read()
+                    
+                    # query timestamp from the WFS service
+                    wfs_response = self.wfs.getfeature(typename = self.wfs_typename,
+                                                    bbox = tuple(query_bbox), 
+                                                    srsname = "EPSG:" + str(self.import_crs)).read()
+                    timestamps[i][j] = BeautifulSoup(wfs_response, features = "xml").find(self.wfs_datepos).text
+                
+            # concat the queried images
+            outimage = Image.new('RGB', tuple([int(x) for x in total_size]))
+            for i in range(query_shape[0]):
+                for j in range(query_shape[1]):
+                   outimage.paste(Image.open(BytesIO(imgs[i][j])), tuple([int(x) for x in PIL_coords[i][j]]))
             
             # export as jpg first
-            with open(self.storage_directory + "/" + self.state + 
-                      "_" + "_".join([str(x) for x in query_bbox]) + "_" + timestamp + ".jpg", "wb") as file:
-                file.write(img)
+            outimage.save(self.storage_directory + "/" + 
+                          ids[n] + "_" + timestamps.flat[0] + ".jpg")
             
             # turn jpg into numpy array
-            tmp_np = asarray(Image.open(BytesIO(img)))
+            tmp_np = asarray(outimage)[::-1]
             
             # create xarray
-            tmp_xd = Dataset(data_vars = {"red": (["x", "y"], tmp_np[:,:,0]),
-                                          "green": (["x", "y"], tmp_np[:,:,1]),
-                                          "blue": (["x", "y"], tmp_np[:,:,2])},
-                             coords = {"x": (["x"], arange(tmp_np.shape[0]) * self.pixel_density + query_bbox[0]),
-                                       "y": (["y"], arange(tmp_np.shape[1]) * self.pixel_density + query_bbox[1])})
+            tmp_xd = Dataset(data_vars = {"red": (["y", "x"], tmp_np[:,:,0]),
+                                          "green": (["y", "x"], tmp_np[:,:,1]),
+                                          "blue": (["y", "x"], tmp_np[:,:,2])},
+                             #data_vars = {"rgb": (["x", "y"], tmp_np)},
+                             coords = {"y": (["y"], arange(tmp_np.shape[0]) * self.pixel_density + bbox[1]),
+                                       "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density + bbox[0])})
             # convert type
             tmp_xd = tmp_xd.astype("int")
             # set output crs
@@ -108,10 +186,18 @@ class data_imagery(data_abstract):
             tmp_xd.rio.write_coordinate_system(inplace = True)
             tmp_xd.rio.write_transform(inplace = True)
             # export the nc
-            with open(self.storage_directory + "/" + self.state + 
-                      "_" + "_".join([str(x) for x in query_bbox]) + "_" + timestamp + ".nc", "wb") as file:
-                tmp_xd.to_netcdf(file)
-                
+            tmp_xd.to_netcdf(self.storage_directory + "/" + ids[n] +  "_" + timestamps.flat[0] + ".nc")
+            #tmp_xd.rio.to_raster(self.storage_directory + "/" + ids[n] +  "_" + timestamps.flat[0] + ".tif")
+            
             n += 1
             
-        print("Successfully queried and exported " + str(n) + " images")
+        print("--- Successfully queried and exported " + str(n) + " images ---")
+  
+"""       
+if __name__ == "__main__":
+    import geopandas as gpd
+    driveways = gpd.read_file("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg.geojson").\
+        dissolve(by = "link_id", as_index = False)
+    imagery_downloader = data_imagery("brandenburg")
+    imagery_downloader.query(driveways.bounds.values[[1]], driveways.link_id[[1]].reset_index(drop = True))
+"""
