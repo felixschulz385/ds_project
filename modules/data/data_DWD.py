@@ -76,7 +76,9 @@ def download_files(parent_links):
         for link in download_links[key]:
             # obtain filename by splitting url and getting 
             # last string 
-            file_name = link.split('/')[-1] 
+            file_name = link.split('/')[-1]
+            
+            file_name.split('.')[0:-1]
             
             # check whether file exists in path. If false -> download file to path
             if not os.path.exists(os.path.join(directory, file_name)): 
@@ -90,6 +92,8 @@ def download_files(parent_links):
                             f.write(chunk) 
                 
                 print( f"{file_name} downloaded.")
+                
+                
             
             # if file exists pass 
             else:
