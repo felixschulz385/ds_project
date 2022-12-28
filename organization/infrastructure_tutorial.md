@@ -47,6 +47,11 @@ salloc --ntasks=1 --partition=single --cpus-per-task=1 --mem-per-cpu=8000 --time
 module load devel/code-server
 code-server --bind-addr 0.0.0.0:8081 --auth password $HOME/ds_project/
 ```
+If you like to request GPU resources you can run the following **'salloc'** command instead:
+
+```{.bash}
+salloc -p gpu_4 -n 40 -t 02:00:00 --mem 16000 --gres=gpu:1
+```
 
 Keep this window running. 
 
