@@ -2,12 +2,6 @@
 
 In this research project we seek to identify the potential of photovolatic power in highway turnoffs across Germany. It is currently a work in progress.
 
-> ## Authors: 
-> ### Bodry, Ivette
-> ### Hoberg, Marvin
-> ### Besler, Jan
-> ### Schulz, Felix 
-
 ![](presentations/fig/driveways_example_7.jpg)
 :copyright: GeoBasis-DE/LGB, OpenStreetMap
 
@@ -36,8 +30,9 @@ Core elements of the research project include:
   - [ ] Terrain suitability
   - [ ] Macro-level wheather considerations based on sunlight
   - [ ] Optimal angle of construction and safety of passing cars
+- [ ] Presentation of findings in a Dashboard
 
-Economic suitability of a potential spot is then measured with the following economic model:
+Economic suitability of a potential spot is measured with the following economic model:
 
 ![](presentations/fig/economic_model.jpeg)
 
