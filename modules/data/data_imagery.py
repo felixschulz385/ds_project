@@ -1,8 +1,8 @@
-from modules.data.data_abstract import data_abstract
+#from modules.data.data_abstract import data_abstract
 from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
 from bs4 import BeautifulSoup
-from numpy import array, asarray, expand_dims, arange, ceil, floor
+from numpy import array, asarray, unique, expand_dims, arange, ceil, floor, float64
 from time import sleep
 from io import BytesIO
 from PIL import Image
@@ -11,24 +11,34 @@ import rioxarray
 from geopandas import GeoSeries
 from shapely.geometry import Polygon
 
-class data_imagery(data_abstract): #
+class data_imagery(): #data_abstract
     
-    # establishes a connection to the wms service           
+    # establishes a connection to the imagery wms service           
     def __establish_wms_connection(self):
         self.wms = WebMapService(self.wms_service, version='1.3.0')
         print([self.wms.identification.title, self.wms.identification.abstract])
         
-    # establishes a connection to the wfs service           
+    # establishes a connection to the imagery wfs service           
     def __establish_wfs_connection(self):
         self.wfs = WebFeatureService(self.wfs_service, version='1.1.0')
         print([self.wfs.identification.title, self.wfs.identification.abstract])
+        
+    # establishes a connection to the height wms service
+    def __establish_height_wms_connection(self):
+        self.height_wms = WebMapService(self.height_wms_service, version='1.3.0')
+        print([self.height_wms.identification.title, self.height_wms.identification.abstract])
+        
+    # establishes a connection to the grid wfs service
+    def __establish_grid_wfs_connection(self):
+        self.wfs_grid = WebFeatureService(self.grid_wfs_service, version='1.1.0')
+        print([self.wfs_grid.identification.title, self.wfs_grid.identification.abstract])
     
     # takes a bbox-list of format (xmin, ymin, xmax, ymax) and projects it
     def __project_bounding_box(self, bbox, bbox_crs):
         polygon = Polygon([(bbox[0], bbox[1]),
-                                            (bbox[0], bbox[3]),
-                                            (bbox[2], bbox[3]),
-                                            (bbox[2], bbox[1])])
+                            (bbox[0], bbox[3]),
+                            (bbox[2], bbox[3]),
+                            (bbox[2], bbox[1])])
         return(GeoSeries(polygon).set_crs(bbox_crs).to_crs(self.import_crs).bounds)
     
     # calculates the output image size according to the provided density and bbox
@@ -101,9 +111,17 @@ class data_imagery(data_abstract): #
                 self.wfs_service = "https://isk.geobasis-bb.de/ows/aktualitaeten_wfs?"
                 self.wfs_typename = "app:dop20rgbi_2016_2018_single"
                 self.wfs_datepos = "app:creationdate"
+                #self.height_wms_service = "https://isk.geobasis-bb.de/mapproxy/dgm/service/wms"
+                #self.height_wms_layer = "dgm"
+                #self.height_conv_factor = (1 / .2)
+                self.grid_wfs_service = "https://isk.geobasis-bb.de/ows/blattschnitte_wfs?"
+                self.grid_wfs_typename = "app:kachelung1km"
+                self.wfs_gridpos = "app:kachelnummer"
         
         self.__establish_wms_connection()
         self.__establish_wfs_connection()
+        self.__establish_grid_wfs_connection()
+        #self.__establish_height_wms_connection()
     
     def query(self, spatial_bounds, ids, offset = 20, crs = 25833):
         
@@ -133,8 +151,10 @@ class data_imagery(data_abstract): #
             
             # prepare output vectors
             imgs = array([[None] * query_shape[1]] * query_shape[0])
+            #heights = array([[None] * query_shape[1]] * query_shape[0])
             timestamps = array([[None] * query_shape[1]] * query_shape[0])
-            
+            grids = []
+
             for i in range(query_shape[0]):
                 for j in range(query_shape[1]):
                     
@@ -157,6 +177,25 @@ class data_imagery(data_abstract): #
                                                     bbox = tuple(query_bbox), 
                                                     srsname = "EPSG:" + str(self.import_crs)).read()
                     timestamps[i][j] = BeautifulSoup(wfs_response, features = "xml").find(self.wfs_datepos).text
+                    
+                    # query grids from the WFS service
+                    wfs_response = self.wfs_grid.getfeature(typename = self.grid_wfs_typename,
+                                                    bbox = tuple(query_bbox), 
+                                                    srsname = "EPSG:" + str(self.import_crs)).read()
+                    for x in BeautifulSoup(wfs_response, features = "xml").find_all(self.wfs_gridpos): 
+                        if x is not None: 
+                            grids.append(x.text)
+                    
+                    # query height profile from the WMS service
+                    #heights[i][j] = self.height_wms.getmap(
+                    #    layers = [self.height_wms_layer],
+                    #    srs = "EPSG:" + str(self.import_crs),
+                    #    bbox = query_bbox,
+                    #    size = [x / self.height_conv_factor for x in self.__calculate_image_size(query_bbox)],
+                    #    format = "image/jpeg").read()
+                    
+            ###
+            ## Imagery
                 
             # concat the queried images
             outimage = Image.new('RGB', tuple([int(x) for x in total_size]))
@@ -169,7 +208,7 @@ class data_imagery(data_abstract): #
                           ids[n] + "_" + timestamps.flat[0] + ".jpg")
             
             # turn jpg into numpy array
-            tmp_np = asarray(outimage)[::-1]
+            tmp_np = asarray(outimage, dtype = float64)[::-1]
             
             # create xarray
             tmp_xd = Dataset(data_vars = {"red": (["y", "x"], tmp_np[:,:,0]),
@@ -177,9 +216,34 @@ class data_imagery(data_abstract): #
                                           "blue": (["y", "x"], tmp_np[:,:,2])},
                              #data_vars = {"rgb": (["x", "y"], tmp_np)},
                              coords = {"y": (["y"], arange(tmp_np.shape[0]) * self.pixel_density + bbox[1]),
-                                       "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density + bbox[0])})
+                                       "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density + bbox[0])},
+                             attrs = {"grids": unique(grids)})
+            
+            ###
+            ## Height
+            
+            # concat the queried images
+            #outimage = Image.new('RGB', tuple([int(x / self.height_conv_factor) for x in total_size ]))
+            #for i in range(query_shape[0]):
+            #    for j in range(query_shape[1]):
+            #       outimage.paste(Image.open(BytesIO(heights[i][j])), tuple([int(x / self.height_conv_factor) for x in PIL_coords[i][j]]))
+            
+            # turn jpg into numpy array
+            #tmp_np = asarray(outimage.convert('L'), dtype = float64)[::-1]
+            
+            # create xarray for height
+            #tmp_xd_height = Dataset(data_vars = {"height": (["y", "x"], tmp_np)},
+            #                 #data_vars = {"rgb": (["x", "y"], tmp_np)},
+            #                 coords = {"y": (["y"], arange(tmp_np.shape[0]) * self.pixel_density * self.height_conv_factor + bbox[1]),
+            #                           "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density * self.height_conv_factor + bbox[0])})
+            
+            ###
+            ## Combine and save
+            
+            # interpolate and save
+            #tmp_xd = tmp_xd.assign(height = tmp_xd_height.interp_like(tmp_xd, method = "nearest").height)
+            
             # convert type
-            tmp_xd = tmp_xd.astype("int")
             # set output crs
             tmp_xd.rio.write_crs(25833, inplace = True)
             tmp_xd.rio.set_spatial_dims(x_dim = "x", y_dim = "y", inplace = True)
@@ -193,11 +257,12 @@ class data_imagery(data_abstract): #
             
         print("--- Successfully queried and exported " + str(n) + " images ---")
   
-"""       
+#"""       
 if __name__ == "__main__":
     import geopandas as gpd
     driveways = gpd.read_file("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg.geojson").\
         dissolve(by = "link_id", as_index = False)
     imagery_downloader = data_imagery("brandenburg")
     imagery_downloader.query(driveways.bounds.values[[1]], driveways.link_id[[1]].reset_index(drop = True))
-"""
+    print(driveways.link_id[[1]].reset_index(drop = True))
+#"""

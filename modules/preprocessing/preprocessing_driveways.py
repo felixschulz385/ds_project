@@ -1,4 +1,4 @@
-from modules.preprocessing.preprocessing_abstract import preprocessing_abstract
+#from modules.preprocessing.preprocessing_abstract import preprocessing_abstract
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore", category=shapely.errors.ShapelyDeprecationWarn
 import momepy
 import networkx as nx
 
-class preprocessing_driveways(preprocessing_abstract): #
+class preprocessing_driveways(): #preprocessing_abstract
     """
     This class uses OSM data to find driveway links and exports them as a
     shapefile of linestrings as well as internal poylgons
@@ -124,10 +124,9 @@ class preprocessing_driveways(preprocessing_abstract): #
             grouped_driveways["link_type"] = grouped_driveways["group"].apply(lambda x: self.link_type_shorthands[type_mapping[x]])
             
             # add a link ID comprised of state, link type and an arbitrary number
-            grouped_driveways["link_id"] = grouped_driveways.groupby(["group", "link_type"], as_index = False).ngroup()
             grouped_driveways["link_id"] = grouped_driveways.apply(lambda x: self.bundeslaender_shorthands[bundesland] + "_" +
                                                             x["link_type"] + "_" +
-                                                            str(x["link_id"]).zfill(4), axis = 1)
+                                                            str(x["group_id"]).zfill(4), axis = 1)
             
             # sort by id
             grouped_driveways.sort_values("link_id", inplace = True)
@@ -145,11 +144,12 @@ class preprocessing_driveways(preprocessing_abstract): #
                 drop(columns = "geometry").\
                     explode("polygons").\
                         set_geometry("polygons", crs = "EPSG:"+str(crs))
+            # give polygons unique ids
+            grouped_driveways.id = grouped_driveways.groupby('group_id')['group_id'].rank(method='first')
             # export
             grouped_driveways.to_file(f"{self.storage_directory}OSM/processed/{bundesland}_polygons.geojson", driver='GeoJSON')
                 
-            #return grouped_driveways
-    
+                    
     def __region_preprocess(self, bundesland, region, link_types, crs, offset):
 
         # ----------------------------------------------
@@ -276,5 +276,18 @@ class preprocessing_driveways(preprocessing_abstract): #
         
         # add intersecting highways only
         grid_grouped = pd.concat([grid_grouped, grid_ways])
+        
+        # replace grouping with geographically sorted id
+        group_id_mapping = grid_grouped.dissolve(by = "group", as_index = False)
+        group_id_mapping["c_x"] = group_id_mapping.centroid.apply(lambda x: x.x if x is not None else None)
+        group_id_mapping["c_y"] = group_id_mapping.centroid.apply(lambda x: x.y if x is not None else None)
+        group_id_mapping.sort_values(["c_x", "c_y"], inplace = True)
+        group_id_mapping["group_id"] = group_id_mapping.reset_index().index
 
+        grid_grouped = pd.merge(grid_grouped, group_id_mapping[["group", "group_id"]], on = "group")
+        
         return grid_grouped
+    
+if __name__ == "__main__":
+    preprocessor_driveways = preprocessing_driveways()
+    preprocessor_driveways.preprocess("brandenburg")
