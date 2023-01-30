@@ -4,7 +4,7 @@ from zipfile import ZipFile
 import xarray
 import rioxarray
 
-class data_cartography(data_abstract):
+class data_irradiation(data_abstract):
     
     def __init__(self,
                  storage_directory = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/SARAH"):
