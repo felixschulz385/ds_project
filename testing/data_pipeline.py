@@ -34,11 +34,13 @@ def f_data_imagery(bundesland, base_path):
     """
     import geopandas as gpd
     # get the boundaries for brandenburg roads
-    driveways = gpd.read_file(f"{base_path}/OSM/processed/{bundesland}.geojson").\
+    driveways = gpd.read_file(f"{base_path}/OSM/processed/{bundesland}_polygons.geojson").\
         dissolve(by = "link_id", as_index = False)
+    driveways["geometry"] = driveways.geometry.apply(lambda x: x.buffer(201) if x is not None else None)
     # query the images
     imagery_downloader = data_imagery(bundesland)
     imagery_downloader.query(driveways.bounds.values, driveways.link_id.reset_index(drop = True))
+
 
 def f_preprocess_driveways(bundesland):
     """
@@ -48,7 +50,7 @@ def f_preprocess_driveways(bundesland):
         bundesland (str): name of German state to query
     """
     preprocessor_driveways = preprocessing_driveways()
-    preprocessor_driveways.preprocess(bundesland, offset = 50)
+    preprocessor_driveways.preprocess(bundesland, offset = 500)
     
 def f_preprocess_power_stations(bundesland):
     """
@@ -139,4 +141,4 @@ def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scrat
    
 
 if __name__ == "__main__":
-    main(analysis_DGM = True)
+    main(data_imagery = True, preprocessing_driveways = False)

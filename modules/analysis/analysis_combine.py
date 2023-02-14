@@ -61,20 +61,20 @@ class analysis_combine(): #analysis_abstract
         # get the overall area
         driveways['suitable_area'] = driveways['geometry'].area
         # get the irradiation score
-        driveways["irradiation_score"] = driveways.irradiation.apply(lambda x: (driveways.irradiation.max() - x) / (driveways.irradiation.max() - driveways.irradiation.min()))
-        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "dense", ascending = False)
+        driveways["irradiation_score"] = driveways.irradiation.apply(lambda x: (142.19999695 - x) / (142.19999695 - 108.40000153))
+        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "min", ascending = False)
         # get the distance score
         driveways["distance_score"] = driveways["distance_substation"].apply(lambda x: (driveways["distance_substation"].max() - x) / (driveways["distance_substation"].max() - driveways["distance_substation"].min()))
-        driveways["distance_rank"] = driveways.distance_score.rank(method = "dense", ascending = False)
+        driveways["distance_rank"] = driveways.distance_score.rank(method = "min", ascending = False)
         # get the terrain score
         driveways["terrain_score"] = 1 - (driveways["terrain_roughness"] / 90)
-        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "dense", ascending = False)
+        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "min", ascending = False)
 
         # get the overall score
         driveways["overall_score"] = (economic_model["irradiation"] * driveways["irradiation_score"] + 
                             economic_model["distance"] * driveways["distance_score"] +
                             economic_model["terrain"] * driveways["terrain_score"])
-        driveways["overall_rank"] = driveways.overall_score.rank(method = "dense", ascending = False)
+        driveways["overall_rank"] = driveways.overall_score.rank(method = "min", ascending = False)
         
         # add municipality information
         driveways = driveways.sjoin(municipalities[["geometry", "NAME_4"]], predicate = "intersects")

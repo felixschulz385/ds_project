@@ -2,7 +2,7 @@
 from owslib.wms import WebMapService
 from owslib.wfs import WebFeatureService
 from bs4 import BeautifulSoup
-from numpy import array, asarray, unique, expand_dims, arange, ceil, floor, float64
+from numpy import array, asarray, unique, expand_dims, arange, ceil, floor, float64, isnan
 from time import sleep
 from io import BytesIO
 from os import listdir
@@ -53,6 +53,10 @@ class data_imagery(): #data_abstract
         # calculate image size
         xlim = (bbox[2] - bbox[0]) / self.pixel_density
         ylim = (bbox[3] - bbox[1]) / self.pixel_density
+        
+        # enforce minimum image size
+        #xlim = min(xlim, 1000)
+        #ylim = min(ylim, 1000)
         
         # catch the special case when a null query would be sent
         if xlim % self.size_restriction[0] == 0: xlim += 10
@@ -134,6 +138,11 @@ class data_imagery(): #data_abstract
         
         for bbox in spatial_bounds:
             
+            if all([isnan(x) for x in bbox]):
+                print("--- Skipping unbounded polygon ---")
+                n += 1
+                continue
+            
             if (len([x for x in [compile(ids[n]).search(x) for x in existing_files] if x is not None]) > 0):
                 print("--- Skipping already downloaded image ---")
                 n += 1
@@ -149,101 +158,104 @@ class data_imagery(): #data_abstract
             
             print(f"--- Querying for image {n+1} ---")
             
-            try:
+            error = True
+            while error:
             
-                # project the bbox if necessary
-                if(crs != self.import_crs):
-                    query_bbox = self.__project_bounding_box(bbox, crs)
-                else:
-                    query_bbox = bbox
+                try:
                 
-                # extend image boundaries
-                query_bbox[[0,1]] = floor(query_bbox[[0,1]] - offset)
-                query_bbox[[2,3]] = ceil(query_bbox[[2,3]] + offset)
-                
-                # calculate total size
-                total_size = self.__calculate_image_size(query_bbox)
-                
-                # calculate splits if necessary
-                PIL_coords, query_bboxes, query_shape = self.__get_split_parameters(query_bbox)
-                
-                print(query_shape)
-                
-                # prepare output vectors
-                imgs = array([[None] * query_shape[1]] * query_shape[0])
-                timestamps = array([[None] * query_shape[1]] * query_shape[0])
-                grids = []
-
-                for i in range(query_shape[0]):
-                    for j in range(query_shape[1]):
-                        
-                        print(str(i) + "_" + str(j))
-                        
-                        sleep(.5)
-                        
-                        query_bbox = query_bboxes[i][j]
-                        
-                        # query the imagery from the WMS service
-                        imgs[i][j] = self.wms.getmap(
-                            layers = [self.wms_layer],
-                            srs = "EPSG:" + str(self.import_crs),
-                            bbox = query_bbox,
-                            size = self.__calculate_image_size(query_bbox),
-                            format = "image/jpeg").read()
-                        
-                        # query timestamp from the WFS service
-                        wfs_response = self.wfs.getfeature(typename = self.wfs_typename,
-                                                        bbox = tuple(query_bbox), 
-                                                        srsname = "EPSG:" + str(self.import_crs)).read()
-                        timestamps[i][j] = BeautifulSoup(wfs_response, features = "xml").find(self.wfs_datepos).text
-                        
-                        # query grids from the WFS service
-                        wfs_response = self.wfs_grid.getfeature(typename = self.grid_wfs_typename,
-                                                        bbox = tuple(query_bbox), 
-                                                        srsname = "EPSG:" + str(self.import_crs)).read()
-                        for x in BeautifulSoup(wfs_response, features = "xml").find_all(self.wfs_gridpos): 
-                            if x is not None: 
-                                grids.append(x.text)
-                        
-                ###
-                ## Imagery
+                    # project the bbox if necessary
+                    if(crs != self.import_crs):
+                        query_bbox = self.__project_bounding_box(bbox, crs)
+                    else:
+                        query_bbox = bbox
                     
-                # concat the queried images
-                outimage = Image.new('RGB', tuple([int(x) for x in total_size]))
-                for i in range(query_shape[0]):
-                    for j in range(query_shape[1]):
-                        outimage.paste(Image.open(BytesIO(imgs[i][j])), tuple([int(x) for x in PIL_coords[i][j]]))
+                    # extend image boundaries
+                    query_bbox[[0,1]] = floor(query_bbox[[0,1]] - offset)
+                    query_bbox[[2,3]] = ceil(query_bbox[[2,3]] + offset)
+                    
+                    # calculate total size
+                    total_size = self.__calculate_image_size(query_bbox)
+                    
+                    # calculate splits if necessary
+                    PIL_coords, query_bboxes, query_shape = self.__get_split_parameters(query_bbox)
+                    
+                    print(query_shape)
+                    
+                    # prepare output vectors
+                    imgs = array([[None] * query_shape[1]] * query_shape[0])
+                    timestamps = array([[None] * query_shape[1]] * query_shape[0])
+                    grids = []
+
+                    for i in range(query_shape[0]):
+                        for j in range(query_shape[1]):
+                            
+                            print(str(i) + "_" + str(j))
+                            
+                            sleep(1)
+                            
+                            query_bbox = query_bboxes[i][j]
+                            
+                            # query the imagery from the WMS service
+                            imgs[i][j] = self.wms.getmap(
+                                layers = [self.wms_layer],
+                                srs = "EPSG:" + str(self.import_crs),
+                                bbox = query_bbox,
+                                size = self.__calculate_image_size(query_bbox),
+                                format = "image/jpeg").read()
+                            
+                            # query timestamp from the WFS service
+                            wfs_response = self.wfs.getfeature(typename = self.wfs_typename,
+                                                            bbox = tuple(query_bbox), 
+                                                            srsname = "EPSG:" + str(self.import_crs)).read()
+                            timestamps[i][j] = BeautifulSoup(wfs_response, features = "xml").find(self.wfs_datepos).text
+                            
+                            # query grids from the WFS service
+                            wfs_response = self.wfs_grid.getfeature(typename = self.grid_wfs_typename,
+                                                            bbox = tuple(query_bbox), 
+                                                            srsname = "EPSG:" + str(self.import_crs)).read()
+                            for x in BeautifulSoup(wfs_response, features = "xml").find_all(self.wfs_gridpos): 
+                                if x is not None: 
+                                    grids.append(x.text)
+                            
+                    ###
+                    ## Imagery
+                        
+                    # concat the queried images
+                    outimage = Image.new('RGB', tuple([int(x) for x in total_size]))
+                    for i in range(query_shape[0]):
+                        for j in range(query_shape[1]):
+                            outimage.paste(Image.open(BytesIO(imgs[i][j])), tuple([int(x) for x in PIL_coords[i][j]]))
+                    
+                    # export as jpg first
+                    outimage.save(self.storage_directory + "/raw/" + 
+                                ids[n] + "_" + timestamps.flat[0] + ".jpg")
+                    
+                    # turn jpg into numpy array
+                    tmp_np = asarray(outimage, dtype = float64)[::-1]
+                    
+                    # create xarray
+                    tmp_xd = Dataset(data_vars = {"red": (["y", "x"], tmp_np[:,:,0]),
+                                                "green": (["y", "x"], tmp_np[:,:,1]),
+                                                "blue": (["y", "x"], tmp_np[:,:,2])},
+                                    #data_vars = {"rgb": (["x", "y"], tmp_np)},
+                                    coords = {"y": (["y"], arange(tmp_np.shape[0]) * self.pixel_density + bbox[1]),
+                                            "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density + bbox[0])},
+                                    attrs = {"grids": unique(grids)})
+                    
+                    # convert type
+                    # set output crs
+                    tmp_xd.rio.write_crs(25833, inplace = True)
+                    tmp_xd.rio.set_spatial_dims(x_dim = "x", y_dim = "y", inplace = True)
+                    tmp_xd.rio.write_coordinate_system(inplace = True)
+                    tmp_xd.rio.write_transform(inplace = True)
+                    # export the nc
+                    tmp_xd.to_netcdf(self.storage_directory + "/raw/" + ids[n] +  "_" + timestamps.flat[0] + ".nc")
+                    
+                    error = False
+                    n += 1
                 
-                # export as jpg first
-                outimage.save(self.storage_directory + "/raw/" + 
-                            ids[n] + "_" + timestamps.flat[0] + ".jpg")
-                
-                # turn jpg into numpy array
-                tmp_np = asarray(outimage, dtype = float64)[::-1]
-                
-                # create xarray
-                tmp_xd = Dataset(data_vars = {"red": (["y", "x"], tmp_np[:,:,0]),
-                                            "green": (["y", "x"], tmp_np[:,:,1]),
-                                            "blue": (["y", "x"], tmp_np[:,:,2])},
-                                #data_vars = {"rgb": (["x", "y"], tmp_np)},
-                                coords = {"y": (["y"], arange(tmp_np.shape[0]) * self.pixel_density + bbox[1]),
-                                        "x": (["x"], arange(tmp_np.shape[1]) * self.pixel_density + bbox[0])},
-                                attrs = {"grids": unique(grids)})
-                
-                # convert type
-                # set output crs
-                tmp_xd.rio.write_crs(25833, inplace = True)
-                tmp_xd.rio.set_spatial_dims(x_dim = "x", y_dim = "y", inplace = True)
-                tmp_xd.rio.write_coordinate_system(inplace = True)
-                tmp_xd.rio.write_transform(inplace = True)
-                # export the nc
-                tmp_xd.to_netcdf(self.storage_directory + "/raw/" + ids[n] +  "_" + timestamps.flat[0] + ".nc")
-            
-            except:
-                pass
-            
-            finally:
-                n += 1
+                except:
+                    pass                    
             
         print("--- Successfully queried and exported " + str(n) + " images ---")
   
