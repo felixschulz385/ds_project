@@ -10,10 +10,9 @@ import dash_table
 from app import app
 
 # import data
-# import data
-kreise_df = pd.read_csv('/home/jan/Uni/DS-Project/modules/dashboard/test/assets/kreise_df.csv')
+kreise_df = pd.read_csv('/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/kreise_df.csv')
 # rename and drop columns
-kreise_df = kreise_df.drop(columns=['Unnamed: 0', 'ID_1', 'ID_3']).rename(columns={'NAME_1': 'Bundesland', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
+kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
 
 # good if there are many options
 Bundesland_unique = kreise_df['Bundesland'].unique()
@@ -74,23 +73,27 @@ def discrete_background_color_bins(df, n_bins=5, columns='all'):
 # run function
 (styles, legend) = discrete_background_color_bins(kreise_df, columns=['avg_Score'])
 
-# change to app.layout if running as single page app instead
-layout = html.Div([
-    dbc.Container([
-        dbc.Row([
-            dbc.Col(html.H1(children='Alle Landkreise auf einen Blick'), className="mb-2")
-        ]),
-        dbc.Row([
-            dbc.Col(html.H6(children='die wichtigsten Kennzahlen zur Filterung und zum Nachschlagen.'), className="mb-4")
-        ]),
-# choose between Bundesland
-    dcc.Dropdown(
-        id='Bundesland_choice',
-        options=Bundesland_options,
-        value=None,
-        #multi=True,
-        style={'width': '50%'}
-        ),
+# the style arguments for the sidebar. We use position:fixed and a fixed width
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "26rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
+# the styles for the main content position it to the right of the sidebar and add some padding.
+CONTENT_STYLE = {
+    "margin-left": "28rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+}
+
+# --------------------
+# MAIN PAGE
+# --------------------
+table = html.Div([
 # define table
     dbc.Row([
         dash_table.DataTable(
@@ -103,7 +106,7 @@ layout = html.Div([
             sort_mode = 'multi',
             # pagination
             page_current=0,
-            page_size=20,
+            page_size=25,
             page_action='native',
             # style
             style_data_conditional = styles,
@@ -112,9 +115,8 @@ layout = html.Div([
                 'textAlign': 'left'
                 } for c in ['Bundesland', 'Landkreis', 'Land_Stadt']],
             style_as_list_view=True,
-        ),
-        legend])
-])])
+        )])
+], style = CONTENT_STYLE)
 
 @app.callback(
     Output('table', 'data'),
@@ -126,3 +128,35 @@ def update_table(Bundesland_choice):
     else:
         filtered_df = kreise_df
     return filtered_df.to_dict(orient='records')
+
+# --------------------
+# SIDEBAR
+# --------------------
+
+sidebar = html.Div([
+    dbc.Container([
+        dbc.Row([
+            dbc.Col(html.H1(children='Alle Landkreise auf einen Blick'), className="mb-1")
+        ]),
+        dbc.Row([
+            dbc.Col(html.H6(children='die wichtigsten Kennzahlen zur Filterung und zum Nachschlagen.'), className="mb-3")
+        ]),
+# choose between Bundesland
+    dbc.Row([
+        dcc.Dropdown(
+        id='Bundesland_choice',
+        options=Bundesland_options,
+        value=None,
+        #multi=True,
+        style={'width': '30vh'}
+        ),
+    ]),
+    dbc.Row([
+        html.Hr(),
+        html.H4("Legende für Heat Spalte"),
+        legend
+    ], class_name = 'mt-3')
+    ])
+], style = SIDEBAR_STYLE)
+
+layout = html.Div([sidebar, table])
