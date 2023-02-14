@@ -26,7 +26,7 @@ Ohren_sunburst = Ohren_sunburst.update_traces(
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
     "position": "fixed",
-    "top": 0,
+    "top": 62.5,
     "left": 0,
     "bottom": 0,
     "width": "26rem",
@@ -56,16 +56,16 @@ sidebar = html.Div([
       html.H4('Kapitel'),
         html.Ol(start=1, children=[
           html.Li([
-            html.A("Einleitung", href="#einleitung"),
+            html.A("Einleitung", href="#/#einleitung"),
           ]),
           html.Li([
-            html.A("Motivation", href="#motivation"),
+            html.A("Motivation", href="#/motivation"),
           ]),
           html.Li([
-            html.A("Aufbau", href="#aufbau"),
+            html.A("Aufbau", href="#/aufbau"),
           ]),
           html.Li([
-            html.A("Fazit", href = "#fazit"),
+            html.A("Fazit", href = "#/fazit"),
           ]),
           html.Li([
             html.A("Überblick Landkreise", href="#ueberblick")
