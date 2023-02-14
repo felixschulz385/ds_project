@@ -3,10 +3,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from dash import dcc, html
 
-from app import app
 # import all pages in the app
-from apps import global_situation, singapore, home
+from app import app
+from apps import karte, rohdaten, home
+
+#hardcoded paths
+logo = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/DS_Project_Logo.jpeg"
 
 # building the navigation bar
 # https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
@@ -28,11 +32,11 @@ navbar = dbc.Navbar(
                 # Use row and col to control vertical alignment of logo / brand
                 dbc.Row(
                     [
-                        dbc.Col(html.Img(src="/assets/DS_Project_Logo.jpeg", height="30px")),
+                        dbc.Col(html.Img(src=logo, height="30px")),
                         dbc.Col(dbc.NavbarBrand("PV-Ohren", className="ml-2")),
                     ],
                     align="center",
-                    no_gutters=True,
+                    #no_gutters=True,
                 ),
                 href="/home",
             ),
@@ -83,4 +87,4 @@ def display_page(pathname):
         return home.layout
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', debug=True)
+    app.run_server(debug=True)
