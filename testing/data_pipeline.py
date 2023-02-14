@@ -4,7 +4,9 @@ from modules.data.data_imagery import data_imagery
 from modules.preprocessing.preprocessing_driveways import preprocessing_driveways
 from modules.preprocessing.preprocessing_power_stations import preprocessing_power_stations
 from modules.analysis.analysis_DGM import analysis_DGM
+from modules.analysis.analysis_irradiation import analysis_irradiation
 from modules.analysis.analysis_power_stations import analysis_power_stations
+from modules.analysis.analysis_combine import analysis_combine
 
 
 bundeslaender_shorthands = {"baden-wuerttemberg": "BW",
@@ -95,8 +97,9 @@ def f_analysis_power_stations(bundesland, base_path):
     # assemble file name of GeoJSON containing substations
     substations = f"{base_path}/OSM/processed/{bundesland}_substations.geojson"
     
-    analysis_power_stations = analysis_power_stations()
-    analysis_power_stations.analyze(driveways, substations)
+    c_analysis_power_stations = analysis_power_stations()
+    c_analysis_power_stations.analyze(driveways, substations,
+                                    "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/borders/gadm41_DEU_4.json")
     
 def f_analysis_irradiation(bundesland, base_path):
     """
@@ -110,12 +113,26 @@ def f_analysis_irradiation(bundesland, base_path):
     
     c_analysis_irradiation = analysis_irradiation()
     c_analysis_irradiation.analyze(driveways)
+    
+def f_analysis_combine(bundesland, base_path):
+    """
+    Combining all processed data and producing all final files for the dashboard
+    
+    Args:
+        bundesland (str): name of German state to query
+    """
+    c_analysis_combine = analysis_combine()
+    c_analysis_combine.analyze(f"{base_path}/OSM/processed/{bundesland}_polygons.geojson",
+                               f"{base_path}/borders/gadm41_DEU_4.json",
+                               economic_model = {"irradiation": 0.15, "distance": 0.25, "terrain": .1},
+                               out_dir = "/pfs/data5/home/tu/tu_tu/tu_zxobe27/ds_project/ds_project/modules/dashboard/data")
+
 
 
 def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data",
          data_borders = False, data_DGM = False, data_iradiation = False, data_imagery = False, data_OSM = False,
          preprocessing_driveways = False, preprocessing_power_stations = False,
-         analysis_DGM = False, analysis_power_stations = False, analysis_irradiation = False):
+         analysis_DGM = False, analysis_power_stations = False, analysis_irradiation = False, analysis_combine = False):
     """
     A function defining the pipeline encompassing data procurement, preprocessing and analysis.
     
@@ -138,7 +155,8 @@ def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scrat
             f_analysis_power_stations(bundesland, base_path)
         if analysis_irradiation:
             f_analysis_irradiation(bundesland, base_path)
-   
+        if analysis_combine:
+            f_analysis_combine(bundesland, base_path)
 
 if __name__ == "__main__":
-    main(data_imagery = True, preprocessing_driveways = False)
+    main(analysis_combine = True)
