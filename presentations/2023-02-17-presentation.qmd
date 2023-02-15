@@ -10,6 +10,23 @@ width: 1440
 height: 960
 ---
 
+<!---
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+IMPORTANT INFORMATION FROM INSTRUCTIONS:
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+In the final presentation, they show the
+- completed project,
+- the central structure of the code, and
+- how users can interact with the result.
+
+A presentation that motivates the central question,
+- derives its relevance, and
+- that refers to relevant literature as appropriate.
+
+As part of the final presentation, students present the finished "product".
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+-->
+
 ## Outline
 
 
@@ -57,10 +74,187 @@ Experimental PV installation spots
 Satellite imagery of two highway turnoffs in Brandenburg
 :::
 
-## When is a turnoff suitable for PV?
+## When is a turnoff suitable for PV? 
 
 - We held expert interviews with the Tübingen project lead and an expert geologist
 
 https://solarbusinesshub.com/2015/04/10/bike-path-on-koreas-highway-covered-with-solar-panels/
 
 Xinhua News Agency via Getty Images
+
+## Insights from pilot project "Lustnauer Ohren"
+
+* Pilot project: 8 weeks construction and 8 years approval (DER SPIEGEL, 2022)
+* Nowadays:
+    + More awareness and pressure from the public
+    + Direct communication with the public via social media
+      when bureaucratic hurdles arise
+    + Consequently, authorities urged not to insist on 50-year-old regulations
+    
+## Derivation of the project's objective
+
+* Illustrate potentials for renewable energies (PV) in a user-friendly way
+  + Online application as information desk for municipalities and citizens
+  + Alternative to complex expert reports
+    
+## Conclusions for contextual focus of our project
+
+Driving factors for one-off costs due to construction and operating costs:
+
+* Environmental assessment for compensation areas
+  + Nature in a potential ear is under protection (§ 44 Naturschutz Gesetz)
+  + PV plant is an encroachment on the landscape
+  + Woody plants such as bushes and trees are assessed differently (i.a. according to size, age)
+  + Compensation areas must be equivalent or greater and geographically close
+  + If landowner of the ear has no free compensation areas, they need to be must be rented (lease fees)
+    - landowner for federal roads is the Regional Council of the county (in German: Regierungsbezirk)
+    - for motorways the Autobahn GmbH/ indirectly the federal government)
+
+Note: The environmental assessment determines one-off costs and long-term profitability of the PV.
+
+## Conclusions for our project from insights (pilot project)
+
+Driving factors for one-off costs due to construction and operating costs:
+
+* Distance to grid
+* Meteorological details: Sunshine hours 
+* Geographical details: Ground conditions and slope
+* [Sky alignment of the road]
+  + Due to the technical innovations of recent years, the factor is less important nowadays as PVs can be built more flexibly than in Lustnau (insight from interview with Prof. Thomas Scholten)
+  
+## Economic Model (Felix)
+
+How is score calculated?
+  
+## Data (Felix)
+
+Potentially cover the following:
+* Data acquisition
+
+<!---
+The complexity and the effort of the data acquisition is considered in the grading of the project.
+-->
+
+* Data preparation
+
+<!---
+The data are read in and made ready for computation and estimation.
+- different parts of the data sets are read in and merged
+- correct identifiers for cross-sectional units (e.g., companies, brands, products, countries, persons) and for time points are generated
+-->
+
+* Data validation
+
+<!---
+The data should be validated, for example
+- by generating descriptive statistics and figures and by identifying implausible observations and outliers
+- criteria for validation, this process should also take place largely without the users’ intervention
+-->
+
+* Data analysis
+
+<!---
+The primary focus of the project is a relevant substantive question, which can, but does not necessarily have to be of an economic nature.
+- relation between to variables (correlational or causal)
+- prediction of economic conditions (predictive analytics)
+- corresponding analysis should be implemented with adequate methods (traditional statistics or machine learning).
+-->
+
+* Data visualization
+
+<!---
+The structure and distribution of the data as well as the relations and results of the data analysis.
+-->
+
+## Training data (Marvin)
+
+## Land cover classification
+
+Goal: Detect features in aerial images
+* Classes of interest
+  + Agriculture
+  + Buildings
+  + Forest and Trees
+  + Other
+  
+<!--- Add picture of example ear here to stress out classes. -->
+  
+## Land cover classification
+
+Analysis tool: Image segmentation
+* Divide image into regions belonging to different semantic classes.
+  + Task of pixel-based classification
+  + Pixel-wise mask for each object in the image
+* Output (class per pixel) is the same size as the input (pixel)
+
+![](fig/segmentation.png){height="500"}
+
+Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
+
+
+## Semantic Segmentation - UNet
+
+* Output (class per pixel) is the same size as the input (pixel)
+* Network consists of a contracting path (downsampling) and an expansive path (upsampling) (Stevens et al., 2020b)
+  + Downsampling:
+    - Specific, detailed detectors (e.g. texture, color, characterising shapes)
+    - Information reduction to relevant feature information
+  + Upsampling:
+  - Combination of the feature and spatial information
+  - Extracting high-resolution features
+* U-shaped network architecture: Early breakthrough for image segmentation
+
+| Model | Advantages | Disadv. |
+|---------|---------|---------|
+| UNet | - widely used basic segmentation model | - training from scratch
+|      | - feedback from interim presentation | - model overfits to training data
+|      | - good starting point | - labelled data not specific for our task
+
+## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)
+
+* Residual networks (ResNets) allow very deep networks to be successfully trained (Stevens et al., 2020a)
+  + Deep networks represent very complex functions
+  + Problem with large networks: Gradient signal that goes to zero
+   - Large number of multiplications, the gradient can decrease exponentially quickly to zero 
+  + Skip Connections: Additional layers do not hurt the model’s performance as regularisation will skip over them if those layers were not useful
+  
+## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)
+  
+* Transfer learning using pre-trained model backbones
+  + Transfer knowledge learned from source dataset (BigEarthNet) to target dataset (training)
+  + Model can already extract more general image features (e.g. textures, shapes)
+  
+* Pre-trained on BigEarthNet dataset
+  + Atmospherically corrected satellite images from different seasons
+  + 10 European countries
+  + multiple land-cover classes (tile classifcation task, not segmentation)
+
+| Model | Advantages | Disadv. |
+|---------|---------|---------|
+| ResNet50 | - pre-trained weights | - trained for classification task
+| + BigEarthNet | - seasonal satellite images | - inferior predictions
+|      | - big dataset on European countries |
+
+## Semantic Segmentation - ResNet101 + COCO (Lin et al., 2014)
+
+* Pre-trained on COCO (Common Objects in Context) dataset
+  + Large-scale object detection and segmentation dataset
+  + Recognition in context (background awareness)
+
+| Model | Advantages | Disadv. |
+|---------|---------|---------|
+| ResNet101 | - pre-trained weights | - COCO dataset
+| + COCO    | - segmentation task | - trained for *object* segmentation
+|      | - superior predictions after few training iterations |
+|      | - least overfitting |
+|      | - complexity of model seems to fit task|
+
+## Presentation of the result - Dashboard (Jan)
+
+## References
+
+* DER SPIEGEL. (2022, November 23, 0:50). Die Klima-Streber: Tübingens Weg in die Energiewende | SPIEGEL TV [Video]. YouTube. https://www.youtube.com/watch?v=WywER5wRLEI.
+* Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., ... & Zitnick, C. L. (2014). Microsoft coco: Common objects in context. In Computer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 (pp. 740-755). Springer International Publishing.
+* Stevens, E., Antiga, L., & Viehmann, T. (2020a). Using convolutions to generalize (Chapter 8). In Deep learning with PyTorch. Manning Publications.
+* Stevens, E., Antiga, L., & Viehmann, T. (2020b). Using segmentation to find suspected nodules (Chapter 13). In Deep learning with PyTorch. Manning Publications.
+* Sumbul, G., Charfuelan, M., Demir, B., & Markl, V. (2019). Bigearthnet: A large-scale benchmark archive for remote sensing image understanding. In IGARSS 2019-2019 IEEE International Geoscience and Remote Sensing Symposium (pp. 5901-5904). IEEE.
