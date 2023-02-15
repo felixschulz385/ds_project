@@ -1,9 +1,9 @@
-#from modules.analysis.analysis_abstract import analysis_abstract 
+from modules.analysis.analysis_abstract import analysis_abstract 
 import re
 import pandas as pd
 import geopandas as gpd
 
-class analysis_power_stations(): #
+class analysis_power_stations(analysis_abstract): #
     """
     A class implementing the analysis of distance to nearest power station
     
@@ -85,10 +85,10 @@ class analysis_power_stations(): #
         # write auxiliary file to disk
         driveways_auxiliary.loc[:,["link_id", "id", "substation", "distance_substation", "lat_driveway", "lon_driveway", "lat_substation", "lon_substation", "NAME_4"]].rename(columns = {"NAME_4": "municipality"}).to_csv(self.storage_directory + "/analysis/" + state_name + "_ps_auxiliary.csv", index = False)
         
-#"""       
+"""       
 if __name__ == "__main__":
     analysis_power_stations = analysis_power_stations()
     analysis_power_stations.analyze("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_polygons.geojson", 
                                     "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_substations.geojson",
                                     "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/borders/gadm41_DEU_4.json")
-#"""
+"""

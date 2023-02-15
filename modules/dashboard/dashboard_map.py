@@ -10,19 +10,11 @@ import plotly.express as px
 
 import base64
 
-from app import app
-
-# hardcoded paths
-BB_polygons_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_polygons_final.json"
-BB_gemeinde_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_gemeinde_final.json"
-BB_kreise_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_kreis_final.json"
-BB_ps_auxiliary = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_ps_auxiliary.csv"
-
 ###
 # Driveways
 ###
 
-polygon_geojson = dl.GeoJSON(url=BB_polygons_final, 
+polygon_geojson = dl.GeoJSON(url=f"assets/BB_polygons_final.json", 
                              id="polygon_geojson",
                              options = {"style": {"color": "#3D426B", 
                                                   "opacity": 0.8, 
@@ -34,16 +26,16 @@ polygon_geojson = dl.GeoJSON(url=BB_polygons_final,
                                                           "opacity": 1, 
                                                           "weight": 2}))
 
-#import os
-#os.chdir("/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard")
+import os
+os.chdir("/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard")
 # get maximum ranks
-max_ranks = gpd.read_file(BB_polygons_final)[["overall_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
+max_ranks = gpd.read_file("assets/BB_polygons_final.json")[["overall_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
 
 ###
 # Gemeinde
 ###
 
-gemeinde_geojson = dl.GeoJSON(url=BB_gemeinde_final,  # url to geojson file
+gemeinde_geojson = dl.GeoJSON(url=f"/assets/BB_gemeinde_final.json",  # url to geojson file
                      #zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
                      zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
                      #hoverStyle=arrow_function(dict(weight=5, color='#666', dashArray='')),  # style applied on hover
@@ -57,7 +49,7 @@ gemeinde_geojson = dl.GeoJSON(url=BB_gemeinde_final,  # url to geojson file
 # Kreis
 ###
 
-kreis_geojson = dl.GeoJSON(url=BB_kreise_final,  # url to geojson file
+kreis_geojson = dl.GeoJSON(url=f"/assets/BB_kreis_final.json",  # url to geojson file
                      #zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
                      zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
                      options={"style":{"color":"grey", "opacity": 0.5, "fillOpacity": 0.2, "weight": 1}},
@@ -209,8 +201,9 @@ tile_layer = dl.TileLayer(url="http://localhost:8080/styles/positron/{z}/{x}/{y}
 ###
 
 # core
+app = Dash(prevent_initial_callbacks = True, external_stylesheets = [dbc.themes.BOOTSTRAP])
 # layout
-layout = html.Div([
+app.layout = html.Div([
     dbc.Row([
         dbc.Col([dl.Map(children = [tile_layer, 
                                     dl.Pane([kreis_geojson], id = "regional-polygon", style = {"zIndex": 200}), 
@@ -436,7 +429,7 @@ def info_click(feature):
         return dbc.Row()
     
 # loading the data on grid access
-grid = pd.read_csv(BB_ps_auxiliary)
+grid = pd.read_csv("./assets/BB_ps_auxiliary.csv")
 
 # a callback that add lines to the closest grid points
 @app.callback([Output("grid-access", "children"), Output("show-grid-access", "children")], Input("show-grid-access", "n_clicks")) #
@@ -448,3 +441,10 @@ def info_click(n):
         return [dl.Marker(position=(tmp["lat_substation"][i], tmp["lon_substation"][i])) for i in tmp.index], "Nächstgelegene 3 Netzanschlusspunkte ausblenden"
     else:
         return [], "Nächstgelegene 3 Netzanschlusspunkte anzeigen"
+###
+# Run app
+###
+
+if __name__ == '__main__':
+        app.run_server(host="0.0.0.0", port=8050, debug = True)# 
+#docker run -it -v $(pwd):/data -p 8080:8080 maptiler/tiles

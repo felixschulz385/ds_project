@@ -3,53 +3,34 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from dash import dcc, html
 
-from app import app
 # import all pages in the app
-from apps import global_situation, singapore, home
+from app import app
+from apps import karte, rohdaten, home
 
-# building the navigation bar
-# https://github.com/facultyai/dash-bootstrap-components/blob/master/examples/advanced-component-usage/Navbars.py
-dropdown = dbc.DropdownMenu(
-    children=[
-        dbc.DropdownMenuItem("Home", href="/haha"),
-        dbc.DropdownMenuItem("Karte", href="/karte"),
-        dbc.DropdownMenuItem("Rohdaten", href="/rohdaten"),
+#hardcoded paths
+# logo from https://www.vectorstock.com/royalty-free-vector/road-sun-shine-logo-vector-17131606
+import base64
+with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/RoadToRenewables.jpg", "rb") as file:
+    logo = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
+
+
+navbar = dbc.NavbarSimple(
+    children = [
+        dbc.NavItem(dbc.NavLink("Karte", href="/karte")),
+        dbc.NavItem(dbc.NavLink("Tabelle", href="/rohdaten"))
     ],
-    nav = True,
-    in_navbar = True,
-    label = "Explore",
-)
-
-navbar = dbc.Navbar(
-    dbc.Container(
-        [
-            html.A(
-                # Use row and col to control vertical alignment of logo / brand
-                dbc.Row(
-                    [
-                        dbc.Col(html.Img(src="/assets/DS_Project_Logo.jpeg", height="30px")),
-                        dbc.Col(dbc.NavbarBrand("PV-Ohren", className="ml-2")),
-                    ],
-                    align="center",
-                    no_gutters=True,
-                ),
-                href="/home",
-            ),
-            dbc.NavbarToggler(id="navbar-toggler2"),
-            dbc.Collapse(
-                dbc.Nav(
-                    # right align dropdown menu with ml-auto className
-                    [dropdown], className="ml-auto", navbar=True
-                ),
-                id="navbar-collapse2",
-                navbar=True,
-            ),
-        ]
-    ),
-    color="dark",
+    brand=dbc.Row([
+            dbc.Col(html.Img(src=logo, height="30px")),
+            dbc.Col(dbc.NavbarBrand("Road to Renewables", className="ml-1")),
+                    ]),
+    brand_href="#",
+    color="primary",
     dark=True,
-    className="mb-4",
+    sticky= 'top',
+    fluid=True,
+    #className="mb-4",
 )
 
 def toggle_navbar_collapse(n, is_open):
@@ -83,4 +64,4 @@ def display_page(pathname):
         return home.layout
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', debug=True)
+    app.run_server(debug=True)

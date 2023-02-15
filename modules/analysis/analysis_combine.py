@@ -1,10 +1,10 @@
-#from modules.analysis.analysis_abstract import analysis_abstract 
-import os, re
+from modules.analysis.analysis_abstract import analysis_abstract 
+import os, re, shutil
 import numpy as np
 import pandas as pd
 import geopandas as gpd
 
-class analysis_combine(): #analysis_abstract
+class analysis_combine(analysis_abstract): #
     """
     A class combining all previously gathered data for use in the final dashboard
     
@@ -38,7 +38,12 @@ class analysis_combine(): #analysis_abstract
         
         # get state name
         state_name = driveways.link_id.str.extract(r"(\w\w(?=_))")[0].unique()[0]
-
+        
+        # reset output directory
+        if os.path.exists(f"{out_dir}/assets"):
+            shutil.rmtree(f"{out_dir}/assets")
+        os.makedirs(f"{out_dir}/assets")
+            
         ##
         # get and combine analysis data
         if os.path.exists(f"{self.storage_directory}/SARAH/analysis/{state_name}_irradiation.csv"):
@@ -61,30 +66,30 @@ class analysis_combine(): #analysis_abstract
         # get the overall area
         driveways['suitable_area'] = driveways['geometry'].area
         # get the irradiation score
-        driveways["irradiation_score"] = driveways.irradiation.apply(lambda x: (driveways.irradiation.max() - x) / (driveways.irradiation.max() - driveways.irradiation.min()))
-        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "dense", ascending = False)
+        driveways["irradiation_score"] = driveways.irradiation.apply(lambda x: (142.19999695 - x) / (142.19999695 - 108.40000153))
+        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "min", ascending = False)
         # get the distance score
         driveways["distance_score"] = driveways["distance_substation"].apply(lambda x: (driveways["distance_substation"].max() - x) / (driveways["distance_substation"].max() - driveways["distance_substation"].min()))
-        driveways["distance_rank"] = driveways.distance_score.rank(method = "dense", ascending = False)
+        driveways["distance_rank"] = driveways.distance_score.rank(method = "min", ascending = False)
         # get the terrain score
         driveways["terrain_score"] = 1 - (driveways["terrain_roughness"] / 90)
-        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "dense", ascending = False)
+        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "min", ascending = False)
 
         # get the overall score
         driveways["overall_score"] = (economic_model["irradiation"] * driveways["irradiation_score"] + 
                             economic_model["distance"] * driveways["distance_score"] +
                             economic_model["terrain"] * driveways["terrain_score"])
-        driveways["overall_rank"] = driveways.overall_score.rank(method = "dense", ascending = False)
+        driveways["overall_rank"] = driveways.overall_score.rank(method = "min", ascending = False)
         
         # add municipality information
-        driveways = driveways.sjoin(municipalities[["geometry", "NAME_4"]], predicate = "intersects")
+        driveways = driveways.sjoin(municipalities[["geometry", "NAME_4"]], predicate = "intersects").drop(columns = "index_right")
         
         # fix names
         driveways.NAME_4 = driveways.NAME_4.replace({r"BernaubeiBerlin": "Bernau bei Berlin",
                                                      r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
         
         # export the results as polygons
-        driveways.to_crs(4326).to_file(f"{out_dir}/{state_name}_polygons_final.json")
+        driveways.to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_polygons_final.json")
         
         ##
         # merge and aggregate for kreise
@@ -108,7 +113,8 @@ class analysis_combine(): #analysis_abstract
                                                 'distance_score': wm,
                                                 'overall_score': wm}).reset_index()
         # export
-        pd.merge(kreis[["NAME_2", "HASC_2", "geometry"]], kreis_stats, left_on = 'NAME_2', right_on = 'NAME_2', how = 'left').to_crs(4326).to_file(f"{out_dir}/{state_name}_kreis_final.json", driver = 'GeoJSON')
+        pd.merge(kreis[["NAME_2", "HASC_2", "geometry"]], kreis_stats, left_on = 'NAME_2', right_on = 'NAME_2', how = 'left').\
+            to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_kreis_final.json", driver = 'GeoJSON')
         
         ##
         # merge and aggregate for gemeinde
@@ -127,13 +133,26 @@ class analysis_combine(): #analysis_abstract
                                                 'irradiation_score': wm, 
                                                 'distance_score': wm,
                                                 'overall_score': wm}).reset_index()
-        pd.merge(gemeinde[["NAME_3", "geometry"]], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').to_crs(4326).to_file(f"{out_dir}/{state_name}_gemeinde_final.json", driver = 'GeoJSON')
+        pd.merge(gemeinde[["NAME_3", "geometry"]], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').\
+            to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_gemeinde_final.json", driver = 'GeoJSON')
+        
+        # copy the axiliary distance information
+        shutil.copy(f"{self.storage_directory}/OSM/analysis/{state_name}_ps_auxiliary.csv", 
+                    f"{out_dir}/assets/{state_name}_ps_auxiliary.csv") 
 
-#"""       
+        # copy the height profile images
+        os.mkdir(f"{out_dir}/assets/imagery")
+        shutil.copytree(f"{self.storage_directory}/DGM/analysis/imagery", 
+                    f"{out_dir}/assets/imagery", 
+                    dirs_exist_ok = True)
+        
+        # zip all results
+        shutil.make_archive(f"{out_dir}/assets", "zip", f"{out_dir}/assets") 
+"""       
 if __name__ == "__main__":
     c_analysis_combine = analysis_combine()
     c_analysis_combine.analyze("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_polygons.geojson",
                                "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/borders/gadm41_DEU_4.json",
-                               {"irradiation": 0.2, "distance": 0.25, "terrain": .05},
+                               {"irradiation": 0.15, "distance": 0.25, "terrain": .1},
                                "/pfs/data5/home/tu/tu_tu/tu_zxobe27/ds_project/ds_project/modules/dashboard/data")
-#"""
+"""
