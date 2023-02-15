@@ -1,0 +1,64 @@
+---
+title: "Photovoltaics off the<br/>beaten track"
+subtitle: "Potential of solar energy in highway turnoffs across Germany"
+author: "Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz"
+format: 
+  revealjs:
+    theme: [default, custom.scss]
+    slide-number: c/t
+width: 1440
+height: 960
+---
+
+## Outline
+
+
+
+## Motivation
+
+- Germany has for the longest time relied heavily on coal and gas (25% in 2010)
+- Climates pledges require a rapid transition to renewable energy
+
+- Wind parks often face opposition from local communities
+- Solar energy is a promising alternative because of its low footprint
+- Photovoltaics (PV) can be installed in places with little alternative use
+    - Most prominently: Roofs
+    - But also: Artifical lakes, parking lots, highways
+
+::: {#fig-examples layout-ncol=3}
+![](fig/pv_example_lake.jpg){width="400"}
+
+![](fig/pv_example_highway.jpg){width="400"}
+
+![](fig/pv_example_parking.jpg){width="400"}
+
+Experimental PV installation spots
+:::
+
+## PV in highway turnoffs: The idea
+
+- Highway turnoffs are unattractive for most uses
+- The city of Tübingen realized that they could be utilized for PV
+- After several years of legal hassle, a site at the B28 in Lustnau is now the city's largest source of green energy
+
+![](fig/lustnauer_ohren.jpg){width="800"}
+
+## Scaling across Germany
+
+- How much potential for such projects is yet unused?
+- We seek to answer this question by taking a closer look at the state of Brandenburg
+
+::: {#fig-turnoffs layout-ncol=2}
+
+![](fig/BB_ML_0173_2018-05-05.jpg){height="500"}
+
+![](fig/BB_ML_0123_2018-04-18.jpg){height="500"}
+
+Satellite imagery of two highway turnoffs in Brandenburg
+:::
+
+##
+
+https://solarbusinesshub.com/2015/04/10/bike-path-on-koreas-highway-covered-with-solar-panels/
+
+Xinhua News Agency via Getty Images
