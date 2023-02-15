@@ -23,7 +23,7 @@ navbar = dbc.NavbarSimple(
             dbc.Col(html.Img(src=logo, height="30px")),
             dbc.Col(dbc.NavbarBrand("Road to Renewables", className="ml-1")),
                     ]),
-    brand_href="#",
+    brand_href="/home",
     color="primary",
     dark=True,
     sticky= 'top',
