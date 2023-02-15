@@ -33,6 +33,15 @@ SIDEBAR_STYLE = {
     "padding": "2rem 1rem",
     "background-color": "#f8f9fa",
 }
+FOOTER_STYLE = {
+    "position": "fixed",
+    "top": 720,
+    "left": 0,
+    "bottom": 0,
+    "width": "26rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
 # the styles for the main content position it to the right of the sidebar and add some padding.
 CONTENT_STYLE = {
     "margin-left": "28rem",
@@ -64,10 +73,6 @@ sidebar = html.Div([
                     dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/vivresursonnuage/",
-                                    target="_blank"),
-                    dmc.Anchor(
-                        DashIconify(icon="bi:mailbox2", width=40),
-                                    href="mailto:yvette.bodry@student.uni-tuebingen.de",
                                     target="_blank")],
                         p=0,
                     )])], position = "right")), DashIconify(icon="openmoji:woman-student", width=25)),
@@ -84,10 +89,6 @@ sidebar = html.Div([
                     dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/felixschulz385/",
-                                    target="_blank"),
-                    dmc.Anchor(
-                        DashIconify(icon="bi:mailbox2", width=40),
-                                    href="mailto:f.schulz@student.uni-tuebingen.de",
                                     target="_blank")],
                         p=0,
                     )])], position = "right"))
@@ -105,10 +106,6 @@ sidebar = html.Div([
                     dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/marvin-hoberg/",
-                                    target="_blank"),
-                    dmc.Anchor(
-                        DashIconify(icon="bi:mailbox2", width=40),
-                                    href="mailto:marvin.hoberg@student.uni-tuebingen.de",
                                     target="_blank")],
                         p=0,
                     )])], position = "right"))
@@ -126,17 +123,20 @@ sidebar = html.Div([
                     dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/janbesler/",
-                                    target="_blank"),
-                    dmc.Anchor(
-                        DashIconify(icon="bi:mailbox2", width=40),
-                                    href="mailto:jan.besler@student.uni-tuebingen.de",
                                     target="_blank")],
                         p=0,
                     )])], position = "right")),
                     ),
 ]),
     ]),
-    # Links und Erklärungen
+], style=SIDEBAR_STYLE)
+
+# --------------------
+# SIDEBAR FOOTER
+# --------------------
+
+footer = html.Div([
+        # Links und Erklärungen
     dbc.Row([
       dbc.Col([
         dmc.Center([
@@ -154,8 +154,9 @@ sidebar = html.Div([
         )])]),
       html.P('This project is being developed as part of the \
               Data Science in Business and Economics Master degree course at the University of Tübingen.')
-    ], align="end")
-], className="pad-row", style=SIDEBAR_STYLE)
+    ], className="fixed-row-bottoms", align="end")
+], style=FOOTER_STYLE)
+
 
 # --------------------
 # MAIN PAGE
@@ -496,4 +497,4 @@ content = html.Div([
 
 ], style=CONTENT_STYLE)
 
-layout = html.Div([sidebar, content])
+layout = html.Div([sidebar, footer, content])
