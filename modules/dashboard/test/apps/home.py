@@ -8,10 +8,11 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
+from app import path_directory
 
 
 # import data
-kreise_df = pd.read_csv('/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/kreise_df.csv')
+kreise_df = pd.read_csv(path_directory + 'apps/assets/kreise_df.csv')
 # rename and drop columns
 kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_2': 'Region', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
 
@@ -164,14 +165,14 @@ footer = html.Div([
 
 # images
 import base64
-with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/economic_model.jpeg", "rb") as file:
+with open(path_directory + "apps/assets/economic_model.jpeg", "rb") as file:
     economic_model_img = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
-with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/brandenburg_driveways.jpg", "rb") as file:
+with open(path_directory + "apps/assets/brandenburg_driveways.jpg", "rb") as file:
     BB_ohren = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
 # carousel pictures
-with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/Lustnauer_Ohren_vorher.jpg", "rb") as file:
+with open(path_directory + "apps/assets/Lustnauer_Ohren_vorher.jpg", "rb") as file:
     carousel_1 = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
-with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/Lustnauer_Ohren_danach.jpg", "rb") as file:
+with open(path_directory + "apps/assets/Lustnauer_Ohren_danach.jpg", "rb") as file:
     carousel_2 = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
     
 # change to app.layout if running as single page app instead

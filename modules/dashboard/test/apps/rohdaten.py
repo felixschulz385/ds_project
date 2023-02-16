@@ -6,10 +6,10 @@ from dash import Dash, html, dcc, dash_table
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
-from app import app
+from app import app, path_directory
 
 # import data
-kreise_df = pd.read_csv('/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/kreise_df.csv')
+kreise_df = pd.read_csv(path_directory + 'apps/assets/kreise_df.csv')
 # rename and drop columns
 kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
 
