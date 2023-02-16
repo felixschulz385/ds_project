@@ -224,7 +224,7 @@ Disadvantages:
 ![](fig/potsdam_pred2.jpeg){height="250"}
 Color Labels: White - Impervious surfaces; Light-blue - Low vegetation; Green - Tree
 
-## Training data - LoveDA (regions of Nanjing, Changzhou and Wuhan / China)
+## Training data - LoveDA (Nanjing, Changzhou and Wuhan / China)
 
 Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
 + High spatial resolution land-cover mapping (spatial resolution of 30 cm)
@@ -244,7 +244,7 @@ Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
 | 0.) Unknown | red |
 
 
-## Training data - LoveDA (regions of Nanjing, Changzhou and Wuhan / China)
+## Training data - LoveDA (Nanjing, Changzhou and Wuhan / China)
 
 Advantages
 * Dataset differentiates between rural and urban images
