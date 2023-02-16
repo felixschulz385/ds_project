@@ -343,6 +343,7 @@ Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Yellow - A
 
 * Road recognition is so good that you could use it to identify the shape of an ear.
 * Even small buildings in shaded areas are detected.
+* The model is trained to recognise organic structures very well (characteristic for landscape in ears), however, human-made structures (fields, buildings) are therefore less regular.
 
 ![](fig/resnet101_pred1.jpeg){height="500"}
 Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Pink - Building
