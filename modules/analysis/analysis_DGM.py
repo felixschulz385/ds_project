@@ -76,7 +76,7 @@ class analysis_DGM(analysis_abstract): #
                             tmp = xr.rio.clip([inset_geometry])
                             
                             # produce an image of the height profile
-                            xarray.plot.imshow(tmp.squeeze().drop_vars(["band", "spatial_ref"]), cbar_kwargs = {"location": "bottom"})
+                            xarray.plot.imshow(xr.rio.clip([x.geometry]).squeeze().drop_vars(["band", "spatial_ref"]), cbar_kwargs = {"location": "bottom"})
                             plt.axis('off')
                             plt.savefig(self.storage_directory + "/analysis/imagery/" + x.link_id + "_" + str(int(x.id)) + ".png", bbox_inches = "tight", transparent = True)
                             plt.close()

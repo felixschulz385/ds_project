@@ -1,11 +1,14 @@
 import os, sys, re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+"""
 from modules.data.data_imagery import data_imagery
 from modules.preprocessing.preprocessing_driveways import preprocessing_driveways
 from modules.preprocessing.preprocessing_power_stations import preprocessing_power_stations
-from modules.analysis.analysis_DGM import analysis_DGM
 from modules.analysis.analysis_irradiation import analysis_irradiation
 from modules.analysis.analysis_power_stations import analysis_power_stations
+from modules.analysis.analysis_DGM import analysis_DGM
+"""
+from modules.analysis.analysis_imagery import analysis_imagery
 from modules.analysis.analysis_combine import analysis_combine
 
 
@@ -82,6 +85,25 @@ def f_analysis_DGM(bundesland, base_path):
     
     c_analysis_DGM = analysis_DGM()
     c_analysis_DGM.analyze(imagery, driveways)
+    
+def f_analysis_imagery(bundesland, base_path):
+    """
+    Processing the satellite imagery. Works image-by-image using the trained Deep Neural Network
+    
+    Args:
+        bundesland (str): name of German state to query
+    """
+    
+    # assemble file names of all NetCDF files containing information on BB standard grids containing a turnoff
+    imagery = os.listdir(base_path + "/imagery/raw/")
+    regexp = re.compile(bundeslaender_shorthands[bundesland] + ".*\.nc")
+    imagery = [(base_path + "/imagery/raw/" + file) for file in imagery if regexp.search(file)]
+    
+    # assemble file name of GeoJSON containing driveway polygons for the German state
+    driveways = f"{base_path}/OSM/processed/{bundesland}_polygons.geojson"
+    
+    c_analysis_imagery = analysis_imagery()
+    c_analysis_imagery.analyze(imagery, driveways, model = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/trained_models/love_checkpoint_DLV3biased_75acc.pth.tar")
 
 def f_analysis_power_stations(bundesland, base_path):
     """
@@ -124,15 +146,15 @@ def f_analysis_combine(bundesland, base_path):
     c_analysis_combine = analysis_combine()
     c_analysis_combine.analyze(f"{base_path}/OSM/processed/{bundesland}_polygons.geojson",
                                f"{base_path}/borders/gadm41_DEU_4.json",
-                               economic_model = {"irradiation": 0.15, "distance": 0.25, "terrain": .1},
-                               out_dir = "/pfs/data5/home/tu/tu_tu/tu_zxobe27/ds_project/ds_project/modules/dashboard/data")
+                               economic_model = {"irradiation": 0.15, "distance": 0.25, "terrain": .1, "land_cover": 0.5},
+                               out_dir = "/pfs/data5/home/tu/tu_tu/tu_zxobe27/ds_project/ds_project/modules/dashboard/deployment")
 
 
 
 def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data",
          data_borders = False, data_DGM = False, data_iradiation = False, data_imagery = False, data_OSM = False,
          preprocessing_driveways = False, preprocessing_power_stations = False,
-         analysis_DGM = False, analysis_power_stations = False, analysis_irradiation = False, analysis_combine = False):
+         analysis_DGM = False, analysis_imagery = False, analysis_power_stations = False, analysis_irradiation = False, analysis_combine = False):
     """
     A function defining the pipeline encompassing data procurement, preprocessing and analysis.
     
@@ -143,14 +165,16 @@ def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scrat
     # iterate over states
     for bundesland in bundeslander:
         # perform step on request
-        if data_imagery:
-            f_data_imagery(bundesland, base_path)
         if preprocessing_driveways:
             f_preprocess_driveways(bundesland)
+        if data_imagery:
+            f_data_imagery(bundesland, base_path)
         if preprocessing_power_stations:
             f_preprocess_power_stations(bundesland)
         if analysis_DGM:
-            f_analysis_DGM(bundesland, base_path)
+            f_analysis_DGM(bundesland, base_path)        
+        if analysis_imagery:
+            f_analysis_imagery(bundesland, base_path)
         if analysis_power_stations:
             f_analysis_power_stations(bundesland, base_path)
         if analysis_irradiation:
@@ -159,4 +183,4 @@ def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scrat
             f_analysis_combine(bundesland, base_path)
 
 if __name__ == "__main__":
-    main(analysis_combine = True)
+    main(analysis_combine=True)

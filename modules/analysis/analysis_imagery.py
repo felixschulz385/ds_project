@@ -9,6 +9,7 @@ import xarray
 import rioxarray
 import PIL
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 import torch
 import torch.nn as nn
@@ -33,9 +34,8 @@ class analysis_imagery(): #analysis_abstract
     """
     
     def __get_image_trans(state):
-        match state:
-            case "brandenburg":
-                return 2
+        if state == "brandenburg":
+            return 2
             
     def __build_transforms(self): 
             
@@ -46,6 +46,14 @@ class analysis_imagery(): #analysis_abstract
             ],)
         
     def __get_splits(self, pic_size):
+        """
+        
+        A function calculating square splits ready to be segmented by a model
+
+        Args:
+            pic_size (iterable): a tuple of size 2 (x,y) of the image size
+
+        """
     
         xmax = pic_size[0]
         ymax = pic_size[1]
@@ -90,9 +98,9 @@ class analysis_imagery(): #analysis_abstract
                     ywrite_upper = ymax
                 # reads
                 if xmax < (xsplit + 1) * 1000:
-                    xread_upper = (xmax - xsplit * 1000)
+                    xread_lower = xread_upper - (xmax - xsplit * 1000)
                 if ymax < (ysplit + 1) * 1000:
-                    yread_upper = (ymax - ysplit * 1000)
+                    yread_lower = yread_upper - (ymax - ysplit * 1000)
                     
                 ## write to out
                 out[n] = ([xsplit_lower, ysplit_lower, xsplit_upper, ysplit_upper], 
@@ -103,6 +111,16 @@ class analysis_imagery(): #analysis_abstract
         return out
     
     def __correct_overshot(self, splits, bbox, bbox_image):
+        """
+        
+        A function dynamically extending the image in case the turnoffs boundary is smaller than one predicted image
+
+        Args:
+            pic_size (iterable): a tuple of size 2 (x,y) of the image size
+
+        """
+        
+        
         # test if x range is overshot
         f_xover = any(any([x[0] < 0, x[2] < 0]) for x in splits[0])
         # test if y range is overshot
@@ -166,6 +184,8 @@ class analysis_imagery(): #analysis_abstract
             imagery (str): The paths to the files containing imagery (can be either .jpg or .nc)
             polygons (str): The path to the GeoJSON containing all turnoff polygons
             model (str): The path to the stored model for prediction
+            inset (int): the inset from street center to take values from
+            model_pixel_density (float): the pixel density of the data used in the model
 
         """
         
@@ -176,17 +196,30 @@ class analysis_imagery(): #analysis_abstract
         if not isinstance(imagery, list):
             imagery = [imagery]
             
-        # load the model 
-        
+        ## load the model 
+        # define device to load to
+        if torch.cuda.is_available():
+            print("--- Using GPU ---")
+            device = torch.device("cuda")
+            torch.set_default_tensor_type(torch.cuda.FloatTensor)
+        else:
+            print("--- Using CPU ---")
+            device = torch.device("cpu")
+            torch.set_default_tensor_type(torch.FloatTensor)
+            
+        # define function to load checkpoint
         def load_checkpoint(checkpoint, model):
             print("=> Loading checkpoint")
             model.load_state_dict(checkpoint["state_dict"])
-        #trained_model = UNET(in_channels=3, out_channels=4).to(device='cpu')
+            
+        # define model architecture
         trained_model = models.segmentation.deeplabv3_resnet101()
-        trained_model.classifier = DeepLabHead(2048, 4)
+        trained_model.classifier = DeepLabHead(2048, 6)
         trained_model.aux_classifier = None
-        trained_model = trained_model.to(device='cpu')
-        load_checkpoint(torch.load(model, map_location=torch.device('cpu')), trained_model)
+        # move the model to the defined device
+        trained_model = trained_model.to(device = device)
+        # load the checkpoint
+        load_checkpoint(torch.load(model, map_location=torch.device(device)), trained_model)
         
         for idx, image_path in enumerate(imagery):
             
@@ -213,7 +246,8 @@ class analysis_imagery(): #analysis_abstract
                 
                 # skip if area too small
                 if x.geometry.buffer(-inset).area == 0:
-                    return pd.Series([0,0,0,0])
+                    return pd.Series([0] * 6, index = ["lc_unknown", "lc_background", "lc_building", "lc_road",
+                                                       "lc_forest", "lc_agriculture"])
                 
                 # get bounds
                 bbox = gpd.GeoSeries(x.geometry, crs = 25833).bounds.iloc[0]
@@ -264,7 +298,7 @@ class analysis_imagery(): #analysis_abstract
                     split = pic_resized.isel(x = range(p_split[0][0], p_split[0][2]), y = range(p_split[0][1], p_split[0][3])).ffill("y").ffill("x")
                     # transform image
                     # RGB, x, y
-                    cut_transformed = val_transform(image = np.stack([np.squeeze(split[dim].to_numpy()) for dim in ["red", "green", "blue"]]).transpose())["image"]
+                    cut_transformed = val_transform(image = np.stack([np.squeeze(split[dim].to_numpy()) for dim in ["red", "green", "blue"]]).transpose())["image"].to(device)
                     
                     # get predictions
                     trained_model.eval()
@@ -280,32 +314,45 @@ class analysis_imagery(): #analysis_abstract
                         preds = torch.argmax(probs, axis = 1).squeeze(0)
                         
                         # write predictions to the data
-                        pic_resized.classification[0, range(p_split[1][1], p_split[1][3]), range(p_split[1][0], p_split[1][2])] = xarray.DataArray(preds.transpose(1,0))[range(p_split[2][1], p_split[2][3]), range(p_split[2][0], p_split[2][2])]
+                        pic_resized.classification[0, range(p_split[1][1], p_split[1][3]), range(p_split[1][0], p_split[1][2])] = xarray.DataArray(preds.transpose(1,0).cpu())[range(p_split[2][1], p_split[2][3]), range(p_split[2][0], p_split[2][2])]
                 
                 # cut out relevant values and get stats   
-                u, counts = np.unique(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.buffer(-inset)]).values, return_counts = True)
+                #u, counts = np.unique(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry.buffer(-inset)]).values, return_counts = True)
                 
                 # write original image
-                fig = xarray.plot.imshow(pic_resized.sel(band=1).drop_vars("classification").to_array("band").sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x]).drop_vars("spatial_ref").fillna(255).astype("int"), rgb = "band", figsize = (5, 5))
+                xarray.plot.imshow(pic_resized.sel(band=1).drop_vars("classification").to_array("band").sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry]).drop_vars("spatial_ref").fillna(255).astype("int"), rgb = "band", figsize = (5, 5))
                 plt.axis('off')
                 plt.savefig(self.storage_directory + "/analysis/imagery/rgb/" + x.link_id + "_" + str(int(x.id)) + ".png", bbox_inches = "tight")
                 plt.close()
                 
                 # write prediction image
-                fig = xarray.plot.imshow(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x]).squeeze("band", drop = True).drop_vars("spatial_ref"), add_colorbar = False)
+                xarray.plot.imshow(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry]).squeeze("band", drop = True).drop_vars("spatial_ref"), 
+                                   add_colorbar = True, 
+                                   cmap = ListedColormap([[x/255 for x in y] + [1] for y in [(0, 0, 0), (255, 255, 225), (255,  0, 255),
+                                                                                             (255, 0, 0), (0, 130, 0), (255, 200, 0)]]),
+                                   vmin = 0, vmax = 5, levels = 6, extend = "max")
+                plt.gca().images[0].colorbar.set_ticklabels(["unknown", "background", "building", "road",
+                                                              "forest", "agriculture"])  
                 plt.axis('off')
                 plt.savefig(self.storage_directory + "/analysis/imagery/predictions/" + x.link_id + "_" + str(int(x.id)) + ".png", bbox_inches = "tight", transparent = True)
                 plt.close()
                 
                 # group stats and return
-                return pd.Series([counts[0], counts[1], counts[2], counts[3]])
+                tmp = pd.Series(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry.buffer(-inset)]).values.flatten()).value_counts()
+                tmp.index = tmp.index.map({0: "lc_unknown", 1: "lc_background", 2: "lc_building", 3: "lc_road",
+                                           4: "lc_forest", 5: "lc_agriculture"})
+                return tmp
 
                 """
                 import matplotlib.pyplot as plt
                 fig, ax = plt.subplots(1, 2, figsize=(10, 5))
                 #xarray.plot.imshow(pic_resized.red.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).squeeze("band", drop = True), ax = ax[0])
-                xarray.plot.imshow(pic_resized.sel(band=1).drop_vars("classification").to_array("band").astype("int").sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x]), rgb = "band", ax = ax[0])
-                xarray.plot.imshow(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x]).squeeze("band", drop = True), ax = ax[1])
+                xarray.plot.imshow(pic_resized.sel(band=1).drop_vars("classification").to_array("band").astype("int").sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry]), rgb = "band", ax = ax[0])
+                xarray.plot.imshow(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry]).squeeze("band", drop = True), ax = ax[1],
+                add_colorbar = False, 
+                                   cmap = ListedColormap([[x/255 for x in y] + [1] for y in [(0, 0, 0), (255, 255, 225), (255,  0, 255), (255, 0, 0),
+                                                                                             (0,  0,  255), (128, 128, 128), (0, 130, 0), (255, 200, 0)]]),
+                                   vmin = 0, vmax = 7, levels = 8, extend = "max")
                 fig.savefig("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/imagery/analysis/test.png")
                 
                 import matplotlib.pyplot as plt
@@ -320,7 +367,7 @@ class analysis_imagery(): #analysis_abstract
             
             # apply definition to all polygons
             driveways_out = driveways.copy().loc[driveways.link_id == driveway_id,["link_id", "id"]]
-            driveways_out[["impervious", "buildings", "low_vegetation", "trees"]] = driveways.loc[driveways.link_id == driveway_id, :].apply(worker, axis = 1)
+            driveways_out = driveways_out.join(driveways.loc[driveways.link_id == driveway_id, :].apply(worker, axis = 1))
 
             # get existing measurements
             if os.path.isfile(self.storage_directory + "/analysis/" + state_name + ".csv"):
@@ -332,82 +379,11 @@ class analysis_imagery(): #analysis_abstract
                 # export table with mapping from link_id to land cover
                 driveways_out.to_csv(self.storage_directory + "/analysis/" + state_name + ".csv", index = False)      
 
-# double convolutional layer which is executed in every step of the u-net 
-# conv layer takes as input number of input channels -> in_channels and outputs vice versa
-class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(DoubleConv, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-        )
-
-    # forward pass in the conv layer 
-    def forward(self, x):
-        return self.conv(x)
-
-# design complete u-net shape 
-# model takes as default 3 input channels and 6 output channels
-class UNET(nn.Module):
-    def __init__(
-            self, in_channels=3, out_channels=6, features=[64, 128, 256, 512],  # features -> num of input nodes at every stage in the model 
-    ):
-        super(UNET, self).__init__()
-        self.downs = nn.ModuleList()
-        self.ups = nn.ModuleList()
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        # Down part of UNET
-        for feature in features:
-            self.downs.append(DoubleConv(in_channels, feature))
-            in_channels = feature
-
-        # Up part of UNET
-        for feature in reversed(features):  # reverse the features i.o. to move upwards in the model 
-            self.ups.append(
-                nn.ConvTranspose2d(
-                    feature*2, feature, kernel_size=2, stride=2,
-                )
-            )
-            self.ups.append(DoubleConv(feature*2, feature))
-        
-        # lowest stage in u-net 
-        self.bottleneck = DoubleConv(features[-1], features[-1]*2)
-        # final conv layer: takes in 64 channels and outputs 1 channel by default 
-        self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
-
-    # forward pass of the u-net model between stages 
-    def forward(self, x):
-        skip_connections = []  # red arrows in the model representation 
-
-        for down in self.downs:
-            x = down(x)  # one DoubleConv run-through 
-            skip_connections.append(x)
-            x = self.pool(x)
-
-        x = self.bottleneck(x)
-        skip_connections = skip_connections[::-1]
-
-        for idx in range(0, len(self.ups), 2):
-            x = self.ups[idx](x)
-            skip_connection = skip_connections[idx//2]
-
-            if x.shape != skip_connection.shape:
-                x = TF.resize(x, size=skip_connection.shape[2:])
-
-            concat_skip = torch.cat((skip_connection, x), dim=1)
-            x = self.ups[idx+1](concat_skip)
-
-        return self.final_conv(x)
-    
-#"""       
+"""
+# --- For testing outside the workflow ---   
 if __name__ == "__main__":
     c_analysis_imagery = analysis_imagery()
     c_analysis_imagery.analyze("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/imagery/raw/BB_ML_0001_2017-08-29.nc", 
                          "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_polygons.geojson",
-                         "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/trained_models/my_checkpoint_pretrained_acc72.pth.tar")
-#"""
+                         "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/trained_models/love_checkpoint_DLV3_6classes.pth.tar")
+"""
