@@ -14,14 +14,33 @@ from app import path_directory
 # import data
 kreise_df = pd.read_csv(path_directory + 'apps/assets/kreise_df.csv')
 # rename and drop columns
-kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_2': 'Region', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
+kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung'
+    })
 
+gemeinde_df = pd.read_csv(path_directory + 'apps/assets/gemeinde_df.csv')
+# rename and drop columns
+gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'NAME_3': 'Gemeinde',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung',
+    'suitable_area': 'Landbedeckung'
+    })
 
 # create sunburst plot
-Ohren_sunburst = px.sunburst(kreise_df, path=['Bundesland', 'Region', 'Landkreis'], values='avg_Score')
+Ohren_sunburst = px.sunburst(kreise_df, path=['Bundesland', 'Landkreis'], values='Gesamtwertung')
 Ohren_sunburst = Ohren_sunburst.update_traces(
     insidetextorientation='radial',
-    hovertemplate = '<b>%{label}</b> <br>Score: %{value}')
+    hovertemplate = '<b>%{label}</b> <br>Wertung: %{value}')
 
 
 # the style arguments for the sidebar. We use position:fixed and a fixed width
@@ -56,7 +75,7 @@ CONTENT_STYLE = {
 
 sidebar = html.Div([
     dbc.Row([
-      html.H3('Road to Renewables'),
+      html.H3('SolarExit'),
       html.H5('Erneuerbare Energie Potenziale an Deutschlands Schnellstraßen'),
       html.Hr()
     ]),
@@ -71,6 +90,10 @@ sidebar = html.Div([
             dmc.HoverCardTarget("Yvette Bodry"),
             dmc.HoverCardDropdown([
                 dmc.Group([
+                    dmc.Anchor(
+                        DashIconify(icon="bi:file-person", width=40),
+                                    href="https://auwi.uni-hohenheim.de/en/team",
+                                    target="_blank"),
                     dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/vivresursonnuage/",

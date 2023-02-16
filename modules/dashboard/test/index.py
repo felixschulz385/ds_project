@@ -8,7 +8,6 @@ from app import app, path_directory
 from apps import karte, rohdaten, home
 
 #hardcoded paths
-# logo from https://www.vectorstock.com/royalty-free-vector/road-sun-shine-logo-vector-17131606
 import base64
 with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
     logo = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
@@ -21,7 +20,7 @@ navbar = dbc.NavbarSimple(
     ],
     brand=dbc.Row([
             dbc.Col(html.Img(src=logo, height="30px")),
-            dbc.Col(dbc.NavbarBrand("Road to Renewables", className="ml-1")),
+            dbc.Col(dbc.NavbarBrand("SolarExit", className="ml-1")),
                     ]),
     brand_href="/home",
     color="primary",
