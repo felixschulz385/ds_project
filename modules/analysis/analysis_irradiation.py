@@ -48,7 +48,7 @@ class analysis_irradiation(analysis_abstract): #
         driveways["irradiation"] = driveways.centroid.apply(worker)  
         
         # export the results
-        driveways.loc[:,["link_id", "id", "irradiation"]].to_csv(f"{self.storage_directory}/analysis/{state_name}_irradiation.csv")
+        driveways.loc[:,["link_id", "id", "irradiation"]].to_csv(f"{self.storage_directory}/analysis/{state_name}_irradiation.csv", index = False)
 
 """       
 if __name__ == "__main__":

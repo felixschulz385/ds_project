@@ -161,7 +161,7 @@ class preprocessing_driveways(): #preprocessing_abstract
         osm = psm.OSM(self.storage_directory+"OSM/raw/"+bundesland+"/"+region+"-latest.osm.pbf")
 
         # assemble the necessary filter
-        filter_dict = {"highway": link_types + ["motorway", "trunk", "primary", "secondary", "tertiary"]}
+        filter_dict = {"highway": link_types + ["motorway", "trunk", "primary", "secondary", "tertiary"]}#
         
         # Filter the OSM data for driveways
         grid = osm.get_data_by_custom_criteria(custom_filter=filter_dict,
@@ -170,7 +170,7 @@ class preprocessing_driveways(): #preprocessing_abstract
                                         # Do not keep nodes (point data)    
                                         keep_nodes=False, 
                                         keep_ways=True, 
-                                        keep_relations=True)
+                                        keep_relations=False)
         print("--- The OSM data has been loaded successfully. ---")
 
         # Project to correct CRS
@@ -209,7 +209,12 @@ class preprocessing_driveways(): #preprocessing_abstract
                 overlaps[i,j] = polygons.iloc[i].intersects(polygons.iloc[j]) 
         
         # define a function that recursively determines overlaps
-        def add_trans(matrix, i, j):
+        def add_trans(matrix, i, j, depth):
+            # limit depth
+            if depth == 100:
+                return matrix
+            else:
+                depth += 1
             # count an overlap in row j at position i
             matrix[j, i] += 1
             # consider all rows that overlap with this
@@ -218,13 +223,13 @@ class preprocessing_driveways(): #preprocessing_abstract
                 if (matrix[k, i] > 0): 
                     continue
                 # recurse
-                matrix = add_trans(matrix, i, k)
+                matrix = add_trans(matrix, i, k, depth)
             return matrix
 
         # Calculate the transitive overlaps
         for i in range(overlaps.shape[0]):
             for j in np.where(overlaps[i, :] > 0)[0]:
-                overlaps = add_trans(overlaps, i, j)
+                overlaps = add_trans(overlaps, i, j, 0)
                 
         # Create a dictionary of transitive overlaps
         outdict = [[]] * overlaps.shape[0]
@@ -237,7 +242,7 @@ class preprocessing_driveways(): #preprocessing_abstract
 
         # Grouping
         grid_links["group"] = [str(x) for x in outdict]
-        grid_grouped = grid_links #grid_links.dissolve(by = "group", as_index = False)
+        grid_grouped = grid_links.copy() #grid_links.dissolve(by = "group", as_index = False)
         
         # -----------------------------------------
         # --- 4.) Filter roads to state borders ---
@@ -261,7 +266,7 @@ class preprocessing_driveways(): #preprocessing_abstract
         link_bounds = grid_grouped.bounds.apply(lambda bbox: shapely.geometry.Polygon([(bbox[0], bbox[1]),
                           (bbox[0], bbox[3]),
                           (bbox[2], bbox[3]),
-                          (bbox[2], bbox[1])]).buffer(100, cap_style = 3), axis = 1)
+                          (bbox[2], bbox[1])]).buffer(100), axis = 1)
 
         # create a matrix of intersections between roads and links
         # the matrix is of size #links X #ways and is NA for no intersection OR the group of the intersecting link

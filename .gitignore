@@ -1,4 +1,5 @@
 /data
+/modules/dashboard/data
 .DS_Store
 *.pdf
 token.txt
@@ -8,12 +9,15 @@ presentations/.Rhistory
 *.pyc
 *.out
 *.csv
+*.json
 *slurm.sh
 *.zip
 *.tar
 organization/Screenshot 2022-10-31 at 15.24.27.png
 presentations/2022-11-07-presentation.log
 /modules/dashboard/assets
+/modules/dashboard/test/apps/assets
+/modules/dashboard/deployment/assets
 
 /model/wandb
 /pfs/data5/home/tu/tu_tu/tu_zxoau27/ds_project/model/wandb
