@@ -168,7 +168,6 @@ The structure and distribution of the data as well as the relations and results 
 
 ## Training data - Postdam 
 
-
 First choice training dataset: Semantic Labeling Benchmark data for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)
 
 ![](fig/potsdam_labels.png){height="500"}
@@ -244,10 +243,12 @@ Disadvantages
 ## Land cover classification
 
 Goal: Detect features in aerial images
+
 * Classes of interest
   + Agriculture
   + Buildings
   + Forest and Trees
+  + Road
   + Other
   
 <!--- Add picture of example ear here to stress out classes. -->
@@ -263,7 +264,6 @@ Analysis tool: Image segmentation
 ![](fig/segmentation.png){height="500"}
 
 Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
-
 
 ## Semantic Segmentation - UNet
 
@@ -321,6 +321,31 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
 |      | - superior predictions after few training iterations |
 |      | - least overfitting |
 |      | - complexity of model seems to fit task|
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Recognition of small forest areas very good.
+* Individual trees are partly not recognized.
+* Shadow areas are not always clearly assigned.
+
+![](fig/resnet101_pred3.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Agricultural areas are better recognized when they are planted.
+* Similar results for single trees that are leafy or bare.
+
+![](fig/resnet101_pred2.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Yellow - Agricultur
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Road recognition is so good that you could use it to identify the shape of an ear.
+* Even small buildings in shaded areas are detected.
+
+![](fig/resnet101_pred1.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Pink - Building
 
 ## Presentation of the result - Dashboard (Jan)
 
