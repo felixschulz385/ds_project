@@ -31,7 +31,7 @@ polygon_geojson = dl.GeoJSON(url=f"assets/BB_polygons_final.json",
                                                           "weight": 3}))
 
 # get maximum ranks
-max_ranks = gpd.read_file(path_directory + "assets/BB_polygons_final.json")[["overall_rank", "land_cover_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
+max_ranks = 1184
 
 ###
 # Gemeinde
@@ -203,7 +203,7 @@ tile_layer = dl.TileLayer(url="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
 ###
 
 # a lagged state variable
-state = {"zoom": 7, "clickedPolygon": "", "image_avail": False}
+state = {"zoom": 7, "clickedPolygon": "", "image_avail": False, "image_avail_terrain": False}
 
 # a callback that controls what polygons are shown
 @callback(Output("regional-polygon", "children"), Input("map", "zoom"))
@@ -254,8 +254,10 @@ def info_click(feature):
             with open(path_directory + "assets/imagery/height_profile/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
                 terrain_image = "data:image/png;base64,{}".format(
                     base64.b64encode(image_file.read()).decode('ascii'))
+                state["image_avail_terrain"] = True
         except:
             terrain_image = None
+            state["image_avail_terrain"] = False
         
         # terrain data
         terrain_roughness = "{:.2f}".format(
@@ -305,7 +307,7 @@ def info_click(feature):
                                         "Dabei fließt die Landbedeckung zu 50%, die Geländebeschaffenheit zu 10%, ",
                                         "der Netzanschluss zu 30% und das Sonnenpotential zu 10% ein."], 
                                         delay = {"show": 20, "hide": 50}, target = "item-overall-score", placement = "right"),
-                            html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks["overall_rank"]
+                            html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks
             ]
         #
         if state["image_avail"]:
@@ -352,11 +354,11 @@ def info_click(feature):
                                     {"item": "Landwirtschaft", "value": feature["properties"]["lc_agriculture"]},
                                     {"item": "Straße", "value": feature["properties"]["lc_road"]}])
             fig = px.pie(df, values='value', names='item', color = "item",
-                         color_discrete_map={"Niedriger Bewuchs": "rgb(255, 255, 225)",
-                                                "Gebäude": "rgb(255,  0, 255)",
-                                                "Hoher Bewuchs": "rgb(255, 0, 0)",
-                                                "Landwirtschaft": "rgb(0, 130, 0)",
-                                                "Straße": "rgb(255, 200, 0)"})
+                         color_discrete_map={"Niedriger Bewuchs": "#ACF6C8",
+                                                "Gebäude": "#757575",
+                                                "Hoher Bewuchs": "#004c00",
+                                                "Landwirtschaft": "#c3b091",
+                                                "Straße": "#F6BE00"})
                         
             fig.layout.update()
             fig.update_traces(textposition='inside', hovertemplate = "%{label}")
@@ -369,28 +371,32 @@ def info_click(feature):
                                         html.Span("Eingeschränkt nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_restricted, html.Br(),
                                         html.Span("Wertung: ", style={
                                                 "color": "grey"}), land_cover_score, html.Br(),
-                                        html.Span("Gesamtrang: ", style={"color": "grey"}), land_cover_rank, "/", max_ranks["land_cover_rank"]], width={"size": 6}),
+                                        html.Span("Gesamtrang: ", style={"color": "grey"}), land_cover_rank, "/", max_ranks], width={"size": 6}),
                                 dbc.Col([dcc.Graph(id = "graph", figure = fig, style={
                                         'width': '300px', 'height': '200px'})], width={"size": 6})
                             ])]
         if not state["image_avail"]:
             card_content_land_cover = dbc.Row([html.Span("ⓘ", style = {"font-size": "1.5rem"}), html.Span("Mangels Bildinformation kann die Landbedeckung nicht beurteilt werden")], class_name = "text-center")
         #
-        card_content_terrain = dbc.Row([
-                                dbc.Col([html.Img(src = terrain_image, width = 300), html.Br(),
-                                        html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
-                                        "size": 6}, class_name = "h-100 justify-content-center align-items-center"),
-                                dbc.Col([html.Span("Mittlere Abweichung der Steigung in Grad: ", style={"color": "grey"}), terrain_roughness, html.Br(),
-                                        html.Span("Hochpunkt: ", style={"color": "grey"}), terrain_high, html.Span(
-                                            "  Tiefpunkt: ", style={"color": "grey", "cursor": "pointer"}), terrain_low, html.Br(),
-                                        html.Span([html.Span("Wertung: ", style={"color": "grey"}), terrain_score, " ⓘ"],
-                                            id = "item-terrain-score", style={"cursor": "pointer"},
-                                        ), html.Br(),
-                                        dbc.Tooltip(["Die Geländebeschaffenheit wird relativ zum unteren Referenzwert ",
-                                                    "von 90 Grad bewertet"], 
-                                                    delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
-                                        html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks["terrain_rank"]], width={"size": 6})
-                            ])
+        if state["image_avail_terrain"]:
+            card_content_terrain = dbc.Row([
+                                    dbc.Col([html.Img(src = terrain_image, width = 300), html.Br(),
+                                            html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
+                                            "size": 6}, class_name = "h-100 justify-content-center align-items-center"),
+                                    dbc.Col([html.Span("Mittlere Abweichung der Steigung in Grad: ", style={"color": "grey"}), terrain_roughness, html.Br(),
+                                            html.Span("Hochpunkt: ", style={"color": "grey"}), terrain_high, html.Span(
+                                                "  Tiefpunkt: ", style={"color": "grey", "cursor": "pointer"}), terrain_low, html.Br(),
+                                            html.Span([html.Span("Wertung: ", style={"color": "grey"}), terrain_score, " ⓘ"],
+                                                id = "item-terrain-score", style={"cursor": "pointer"},
+                                            ), html.Br(),
+                                            dbc.Tooltip(["Die Geländebeschaffenheit wird relativ zum unteren Referenzwert ",
+                                                        "von 90 Grad bewertet"], 
+                                                        delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
+                                            html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks], width={"size": 6})
+                                ])
+            
+        if not state["image_avail"]:
+            card_content_terrain = dbc.Row([html.Span("ⓘ", style = {"font-size": "1.5rem"}), html.Span("Mangels Terraininformation kann die Geländebeschaffenheit nicht beurteilt werden")], class_name = "text-center")
         #
         card_content_grid = [
             html.Span("Nächster Netzanschlusspunkt: ", style={
@@ -401,7 +407,7 @@ def info_click(feature):
                             dbc.Tooltip(["Der Netzanschluss wird relativ zum schlechtesten ",
                                          "in Brandenburg beobachteten Wert bewertet"], 
                                          delay = {"show": 20, "hide": 50}, target = "item-grid-score"),
-                            html.Span("Rang: ", style={"color": "grey"}), distance_rank, "/", max_ranks["distance_rank"], html.Br(),
+                            html.Span("Rang: ", style={"color": "grey"}), distance_rank, "/", max_ranks, html.Br(),
                             dbc.Button("Nächstgelegene 3 Netzanschlusspunkte anzeigen", id="show-grid-access", color="primary", class_name="mr-1 float-end", style={"margin-top": "10px"})
                             ]
         #
@@ -413,7 +419,7 @@ def info_click(feature):
                             dbc.Tooltip(["Das Sonnenpotential wird relativ zum schlechtesten ",
                                          "in Deutschland beobachteten Wert bewertet"], 
                                          delay = {"show": 20, "hide": 50}, target = "item-irradiation-score"),
-                            html.Span("Rang: ", style={"color": "grey"}), irradiation_rank, "/", max_ranks["irradiation_rank"]
+                            html.Span("Rang: ", style={"color": "grey"}), irradiation_rank, "/", max_ranks
         ]
         
         card_content_sources = [
