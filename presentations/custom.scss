@@ -1,0 +1,44 @@
+/*-- scss:rules --*/
+
+
+section.center {
+    top: 0px !important;
+}
+    
+
+p.author {
+    color: white !important;
+    text-align: left;
+}
+    
+.boxed {
+      border-radius: 10px; 
+      border:10px solid black;
+      padding: 10px;
+      margin: 10px 25px 40px;
+}
+
+div.boxed-text {
+    border-radius: 10px; 
+    background: beige; 
+    padding: 10px; 
+    margin: 10px; 
+    text-align: center;
+}
+
+div.questions {
+    text-align: center;
+}
+
+div.questions-content {
+    position: relative;
+    top: 50%;
+    transform: translateY(+50%);
+}
+
+.columns_new {
+    @extend .columns;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
