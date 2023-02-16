@@ -1,6 +1,6 @@
 import pandas as pd
 import geopandas as gpd
-from dash import Dash, html, Output, Input, dcc
+from dash import Dash, html, Output, Input, dcc, dash_table
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
@@ -9,7 +9,8 @@ from dash_extensions.javascript import arrow_function, assign
 import plotly.express as px
 
 import base64
-
+119
+795
 ###
 # Driveways
 ###
@@ -27,7 +28,7 @@ polygon_geojson = dl.GeoJSON(url=f"assets/BB_polygons_final.json",
                                                           "weight": 2}))
 
 # get maximum ranks
-max_ranks = gpd.read_file("ds_project/modules/dashboard/assets/BB_polygons_final.json")[["overall_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
+max_ranks = gpd.read_file("ds_project/modules/dashboard/assets/BB_polygons_final.json")[["overall_rank", "land_cover_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
 
 ###
 # Gemeinde
@@ -242,9 +243,16 @@ app.layout = html.Div([
                                     id = "sym-irradiation", style = {"cursor": "pointer"}),
                                 dbc.Tooltip(["Wertung des", html.Br(), "Sonnenpotentials"], target = "sym-irradiation")
                             ], id = "card-footer-overall")
-                        ], class_name = "text-center")
+                        ], class_name = "text-center align-middle")
                 ], class_name="mt-1 h-100")
-                ], id = "col-overall", md = {"size": 12}, xs = {"size": 12}),
+                ], id = "col-overall", md = {"size": 6}, xs = {"size": 6}),
+                        dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.Div(id = "card-content-image")
+                        ], class_name = "text-center text-justify")
+                ], class_name="mt-1 h-100")
+                ], id = "col-image", md = {"size": 6}, xs = {"size": 6}),
             ], class_name="m-1"),
         
         dbc.Row([
@@ -301,7 +309,7 @@ app.layout = html.Div([
 ###
 
 # a lagged state variable
-state = {"zoom": 7, "clickedPolygon": ""}
+state = {"zoom": 7, "clickedPolygon": "", "image_avail": False}
 
 # a callback that controls what polygons are shown
 @app.callback(Output("regional-polygon", "children"), Input("map", "zoom"))
@@ -329,18 +337,20 @@ def info_hover(feature):
 # a callback that updates the info panel
 @app.callback([Output("card-content-overall", "children"),
                Output("card-footer-overall", "children"),
+               Output("card-content-image", "children"),
                Output("card-content-land-cover", "children"),
                Output("card-content-terrain", "children"),
                Output("card-content-grid", "children"),
                Output("card-content-irradiation", "children"),
-               Output("card-content-sources", "children")], Input("polygon_geojson", "click_feature"))
+               Output("card-content-sources", "children")], 
+              Input("polygon_geojson", "click_feature"))
 def info_click(feature):
     if feature is not None:
         # try and get core data
         state["clickedPolygon"] = [feature["properties"]["link_id"], feature["properties"]["id"]]
         link_name = "Nr. " + str(int(feature["properties"]["link_id"][-4:])) + \
             "/" + str(int(feature["properties"]["id"])) + \
-            " (" + feature["properties"]["NAME_4"] + ")"
+            " (" + feature["properties"]["NAME_3"] + ")"
         suitable_area = "{:.2f}".format(feature["properties"]["suitable_area"])
         overall_score = "{:.2f}".format(feature["properties"]["overall_score"])
         overall_rank = "{:.0f}".format(feature["properties"]["overall_rank"])
@@ -352,34 +362,6 @@ def info_click(feature):
                     base64.b64encode(image_file.read()).decode('ascii'))
         except:
             terrain_image = None
-            
-        # get orthoimage
-        try:
-            with open("ds_project/modules/dashboard/assets/imagery/rgb/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
-                rgb_image = "data:image/png;base64,{}".format(
-                    base64.b64encode(image_file.read()).decode('ascii'))
-        except:
-            rgb_image = None
-            
-        # get land cover data
-        land_cover_share_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"])
-        land_cover_m2_good = feature["properties"]["land_cover_share_good"] * suitable_area
-        land_cover_share_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"])
-        land_cover_m2_restricted = feature["properties"]["land_cover_share_restricted"] * suitable_area
-        land_cover_share_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"])
-        land_cover_m2_prohibted = feature["properties"]["land_cover_share_prohibted"] * suitable_area
-        land_cover_score = "{:.2f}".format(feature["properties"]["terrain_score"])
-        land_cover_rank = "{:.0f}".format(feature["properties"]["terrain_rank"])
-        # make pie chart
-        fig = px.pie(pd.DataFrame().from_records([{"item": "background", "value": feature["properties"]["lc_background"],
-                                   "item": "building", "value": feature["properties"]["lc_building"],
-                                   "item": "forest", "value": feature["properties"]["lc_forest"],
-                                   "item": "agriculture", "value": feature["properties"]["lc_agriculture"],
-                                   "item": "road", "value": feature["properties"]["lc_road"]}]), values='value', names='item')
-        fig.layout.update()
-        fig.update_traces(textposition='inside')
-        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide',
-                          margin = dict(l=0, r=0, t=0, b=0), showlegend = False)
         
         # terrain data
         terrain_roughness = "{:.2f}".format(
@@ -401,9 +383,23 @@ def info_click(feature):
             feature["properties"]["irradiation_score"])
         irradiation_rank = "{:.0f}".format(feature["properties"]["irradiation_rank"])
         #
+        # get orthoimage
+        try:
+            with open("ds_project/modules/dashboard/assets/imagery/rgb/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
+                rgb_image = "data:image/png;base64,{}".format(
+                    base64.b64encode(image_file.read()).decode('utf-8'))
+            state["image_avail"] = True
+            card_content_image = html.Div([
+                    html.Img(src = rgb_image, width = 300), html.Br(),
+                    html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})
+                ])
+        except:
+            state["image_avail"] = False
+            card_content_image = html.Div([
+                    html.Span("ⓘ", style = {"font-size": "4rem"}), html.Br(),
+                    html.Span("Für diese Fläche ist keine Bildinformation vorhanden")
+                ])
         card_content_overall = [
-            dbc.Row([
-                dbc.Col([
                     html.B(link_name), html.Br(),
                             html.Span("Potentialfläche in m²: ", style={
                                     "color": "grey"}), suitable_area, html.Br(),
@@ -416,21 +412,20 @@ def info_click(feature):
                                         "der Netzanschluss zu 30% und das Sonnenpotential zu 10% ein."], 
                                         delay = {"show": 20, "hide": 50}, target = "item-overall-score", placement = "right"),
                             html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks["overall_rank"]
-                ], width = {"size": 6}),
-                dbc.Col([
-                    html.Img(src=rgb_image, width="200px"), html.Br(),
-                                         html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})
-                            ], width = {"size": 6})
-                ])
             ]
-                 
+        #
+        if state["image_avail"]:
+            graphic_land_cover = html.Img(src = svg_handler("land cover", feature["properties"]["land_cover_score"]),
+                                id = "sym-land", style = {"cursor": "pointer"})
+        if not state["image_avail"]:
+            graphic_land_cover = html.Img(src = svg_handler("land cover", 1),
+                                id = "sym-land", style = {"cursor": "pointer"})
         card_footer_overall = [
                             html.Img(src = svg_handler("overall", feature["properties"]["overall_score"]),
                                 id = "sym-overall", style = {"cursor": "pointer"}),
                             dbc.Tooltip("Gesamtwertung", target = "sym-overall"),
                             #
-                            html.Img(src = svg_handler("land cover", feature["properties"]["land_cover_score"]),
-                                id = "sym-land", style = {"cursor": "pointer"}),
+                            graphic_land_cover,
                             dbc.Tooltip(["Wertung der", html.Br(), "Landbedeckung"], target = "sym-land"),
                             #
                             html.Img(src = svg_handler("terrain", feature["properties"]["terrain_score"]),
@@ -445,32 +440,62 @@ def info_click(feature):
                                 id = "sym-irradiation", style = {"cursor": "pointer"}),
                             dbc.Tooltip(["Wertung des", html.Br(), "Sonnenpotentials"], target = "sym-irradiation")
                         ]
-        #
-        card_content_land_cover = [
-            dbc.Row([
-                            dbc.Col([html.Span("Vollständig nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_good, html.Br(),
-                                     html.Span("Eingeschränkt nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_restricted, html.Br(),
-                                     html.Span("Wertung: ", style={
-                                               "color": "grey"}), land_cover_score, html.Br(),
-                                     html.Span("Rang: ", style={"color": "grey"}), land_cover_rank], width={"size": 4}),
-                            dbc.Col([dcc.Graph(id = "graph", figure = fig, style={
-                                    'width': '200px', 'height': '200px'})], width={"size": 4})
-                        ])]
+            
+        # get land cover data
+        if state["image_avail"]:
+            land_cover_share_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"])
+            land_cover_m2_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"] * feature["properties"]["suitable_area"])
+            land_cover_share_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"])
+            land_cover_m2_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"] * feature["properties"]["suitable_area"])
+            land_cover_share_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"])
+            land_cover_m2_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"] * feature["properties"]["suitable_area"])
+            land_cover_score = "{:.2f}".format(feature["properties"]["land_cover_score"])
+            land_cover_rank = "{:.0f}".format(feature["properties"]["land_cover_rank"])
+            # make pie chart
+            df = pd.DataFrame().from_records([{"item": "Niedriger Bewuchs", "value": feature["properties"]["lc_background"]},
+                                    {"item": "Gebäude", "value": feature["properties"]["lc_building"]},
+                                    {"item": "Hoher Bewuchs", "value": feature["properties"]["lc_forest"]},
+                                    {"item": "Landwirtschaft", "value": feature["properties"]["lc_agriculture"]},
+                                    {"item": "Straße", "value": feature["properties"]["lc_road"]}])
+            fig = px.pie(df, values='value', names='item', color = "item",
+                         color_discrete_map={"Niedriger Bewuchs": "rgb(255, 255, 225)",
+                                                "Gebäude": "rgb(255,  0, 255)",
+                                                "Hoher Bewuchs": "rgb(255, 0, 0)",
+                                                "Landwirtschaft": "rgb(0, 130, 0)",
+                                                "Straße": "rgb(255, 200, 0)"})
+                        
+            fig.layout.update()
+            fig.update_traces(textposition='inside', hovertemplate = "%{label}")
+            fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide', hovermode = "x",
+                            margin = dict(l=0, r=0, t=0, b=0))
+            
+            card_content_land_cover = [
+                dbc.Row([       
+                                dbc.Col([html.Span("Vollständig nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_good, html.Br(),
+                                        html.Span("Eingeschränkt nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_restricted, html.Br(),
+                                        html.Span("Wertung: ", style={
+                                                "color": "grey"}), land_cover_score, html.Br(),
+                                        html.Span("Gesamtrang: ", style={"color": "grey"}), land_cover_rank, "/", max_ranks["land_cover_rank"]], width={"size": 6}),
+                                dbc.Col([dcc.Graph(id = "graph", figure = fig, style={
+                                        'width': '300px', 'height': '200px'})], width={"size": 6})
+                            ])]
+        if not state["image_avail"]:
+            card_content_land_cover = dbc.Row([html.Span("ⓘ", style = {"font-size": "1.5rem"}), html.Span("Mangels Bildinformation kann die Landbedeckung nicht beurteilt werden")], class_name = "text-center")
         #
         card_content_terrain = dbc.Row([
                                 dbc.Col([html.Img(src = terrain_image, width = 300), html.Br(),
-                                         html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
+                                        html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
                                         "size": 6}, class_name = "h-100 justify-content-center align-items-center"),
                                 dbc.Col([html.Span("Mittlere Abweichung der Steigung in Grad: ", style={"color": "grey"}), terrain_roughness, html.Br(),
-                                         html.Span("Hochpunkt: ", style={"color": "grey"}), terrain_high, html.Span(
-                                             "  Tiefpunkt: ", style={"color": "grey", "cursor": "pointer"}), terrain_low, html.Br(),
-                                         html.Span([html.Span("Wertung: ", style={"color": "grey"}), terrain_score, " ⓘ"],
+                                        html.Span("Hochpunkt: ", style={"color": "grey"}), terrain_high, html.Span(
+                                            "  Tiefpunkt: ", style={"color": "grey", "cursor": "pointer"}), terrain_low, html.Br(),
+                                        html.Span([html.Span("Wertung: ", style={"color": "grey"}), terrain_score, " ⓘ"],
                                             id = "item-terrain-score", style={"cursor": "pointer"},
                                         ), html.Br(),
-                                         dbc.Tooltip(["Die Geländebeschaffenheit wird relativ zum unteren Referenzwert ",
-                                                      "von 90 Grad bewertet"], 
-                                                     delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
-                                         html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks["terrain_rank"]], width={"size": 6})
+                                        dbc.Tooltip(["Die Geländebeschaffenheit wird relativ zum unteren Referenzwert ",
+                                                    "von 90 Grad bewertet"], 
+                                                    delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
+                                        html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks["terrain_rank"]], width={"size": 6})
                             ])
         #
         card_content_grid = [
@@ -504,7 +529,7 @@ def info_click(feature):
                                 dcc.Link("GADM", href = "https://gadm.org/data.html", target="_blank"), ", ",
                                 dcc.Link("CM SAF", href = "https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002", target="_blank"), html.Br()
         ]
-        return card_content_overall, card_footer_overall, card_content_land_cover, card_content_terrain, card_content_grid, card_content_irradiation, card_content_sources
+        return card_content_overall, card_footer_overall, card_content_image, card_content_land_cover, card_content_terrain, card_content_grid, card_content_irradiation, card_content_sources
     else:
         raise PreventUpdate()
     
