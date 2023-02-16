@@ -4,25 +4,17 @@ from dash import Dash, html, Output, Input, dcc
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
-from dash_extensions.enrich import html
-from dash_extensions.javascript import arrow_function
+from dash_extensions.enrich import html, DashProxy
+from dash_extensions.javascript import arrow_function, assign
 import plotly.express as px
 
 import base64
-
-from app import app, path_directory
-
-# hardcoded paths
-BB_polygons_final = path_directory + "apps/assets/BB_polygons_final.json"
-BB_gemeinde_final = path_directory + "apps/assets/BB_gemeinde_final.json"
-BB_kreise_final = path_directory + "apps/assets/BB_kreis_final.json"
-BB_ps_auxiliary = path_directory + "apps/assets/BB_ps_auxiliary.csv"
 
 ###
 # Driveways
 ###
 
-polygon_geojson = dl.GeoJSON(url=BB_polygons_final, 
+polygon_geojson = dl.GeoJSON(url=f"assets/BB_polygons_final.json", 
                              id="polygon_geojson",
                              options = {"style": {"color": "#3D426B", 
                                                   "opacity": 0.8, 
@@ -34,16 +26,14 @@ polygon_geojson = dl.GeoJSON(url=BB_polygons_final,
                                                           "opacity": 1, 
                                                           "weight": 2}))
 
-#import os
-#os.chdir("/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard")
 # get maximum ranks
-max_ranks = gpd.read_file(BB_polygons_final)[["overall_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
+max_ranks = gpd.read_file("ds_project/modules/dashboard/assets/BB_polygons_final.json")[["overall_rank", "terrain_rank", "distance_rank", "irradiation_rank"]].agg("max").apply(int)
 
 ###
 # Gemeinde
 ###
 
-gemeinde_geojson = dl.GeoJSON(url=BB_gemeinde_final,  # url to geojson file
+gemeinde_geojson = dl.GeoJSON(url=f"/assets/BB_gemeinde_final.json",  # url to geojson file
                      #zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
                      zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
                      #hoverStyle=arrow_function(dict(weight=5, color='#666', dashArray='')),  # style applied on hover
@@ -57,7 +47,7 @@ gemeinde_geojson = dl.GeoJSON(url=BB_gemeinde_final,  # url to geojson file
 # Kreis
 ###
 
-kreis_geojson = dl.GeoJSON(url=BB_kreise_final,  # url to geojson file
+kreis_geojson = dl.GeoJSON(url=f"/assets/BB_kreis_final.json",  # url to geojson file
                      #zoomToBounds=True,  # when true, zooms to bounds when data changes (e.g. on load)
                      zoomToBoundsOnClick=True,  # when true, zooms to bounds of feature (e.g. polygon) on click
                      options={"style":{"color":"grey", "opacity": 0.5, "fillOpacity": 0.2, "weight": 1}},
@@ -209,6 +199,7 @@ tile_layer = dl.TileLayer(url="http://localhost:8080/styles/positron/{z}/{x}/{y}
 ###
 
 # core
+app = Dash(prevent_initial_callbacks = True, external_stylesheets = [dbc.themes.BOOTSTRAP])
 # layout
 app.layout = html.Div([
     dbc.Row([
@@ -221,6 +212,7 @@ app.layout = html.Div([
                         id = "map", center = [52.47288, 13.39777], zoom = 7)],
                 width = {"size": 12, "offset": 0})
         ]),
+    html.Div(id = "test"),
     html.Div(id = "info-panel")
     
 ])
@@ -276,7 +268,7 @@ def info_click(feature):
                           margin = dict(l=0, r=0, t=0, b=0), showlegend = False)
         # get image of terrain
         try:
-            with open("assets/imagery/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
+            with open("ds_project/modules/dashboard/assets/imagery/height_profile/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
                 terrain_image = "data:image/png;base64,{}".format(
                     base64.b64encode(image_file.read()).decode('ascii'))
         except:
@@ -367,7 +359,7 @@ def info_click(feature):
                             html.H4("Geländebeschaffenheit",
                                     className="card-title"),
                             dbc.Row([
-                                dbc.Col([html.Img(src = terrain_image, width="100px", height="100px"), html.Br(),
+                                dbc.Col([html.Img(src = terrain_image, width="150px", height="150px"), html.Br(),
                                          html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
                                         "size": 6}, class_name = "h-100 justify-content-center align-items-center"),
                                 dbc.Col([html.Span("Mittlere Abweichung der Steigung in Grad: ", style={"color": "grey"}), terrain_roughness, html.Br(),
@@ -435,7 +427,7 @@ def info_click(feature):
         return dbc.Row()
     
 # loading the data on grid access
-grid = pd.read_csv(BB_ps_auxiliary)
+grid = pd.read_csv("ds_project/modules/dashboard/assets/BB_ps_auxiliary.csv")
 
 # a callback that add lines to the closest grid points
 @app.callback([Output("grid-access", "children"), Output("show-grid-access", "children")], Input("show-grid-access", "n_clicks")) #
@@ -447,6 +439,10 @@ def info_click(n):
         return [dl.Marker(position=(tmp["lat_substation"][i], tmp["lon_substation"][i])) for i in tmp.index], "Nächstgelegene 3 Netzanschlusspunkte ausblenden"
     else:
         return [], "Nächstgelegene 3 Netzanschlusspunkte anzeigen"
-    
+###
+# Run app
+###
+
 if __name__ == '__main__':
-    app.run_server(debug=True)
+        app.run_server(host="0.0.0.0", port=8050, debug = False)# 
+#docker run -it -v $(pwd):/data -p 8080:8080 maptiler/tiles

@@ -161,7 +161,7 @@ class preprocessing_driveways(): #preprocessing_abstract
         osm = psm.OSM(self.storage_directory+"OSM/raw/"+bundesland+"/"+region+"-latest.osm.pbf")
 
         # assemble the necessary filter
-        filter_dict = {"highway": link_types + ["motorway", "trunk", "primary", "secondary", "tertiary", "service"]}#
+        filter_dict = {"highway": link_types + ["motorway", "trunk", "primary", "secondary", "tertiary"]}#
         
         # Filter the OSM data for driveways
         grid = osm.get_data_by_custom_criteria(custom_filter=filter_dict,
