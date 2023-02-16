@@ -48,16 +48,16 @@ class analysis_combine(analysis_abstract): #
         # get and combine analysis data
         if os.path.exists(f"{self.storage_directory}/SARAH/analysis/{state_name}_irradiation.csv"):
             irradiation_data = pd.read_csv(f"{self.storage_directory}/SARAH/analysis/{state_name}_irradiation.csv")
-            driveways = pd.merge(driveways, irradiation_data, on = ["link_id", "id"])
+            driveways = pd.merge(driveways, irradiation_data, on = ["link_id", "id"], how = "left")
         if os.path.exists(f"{self.storage_directory}/OSM/analysis/{state_name}_ps_distances.csv"):
             ps_distances = pd.read_csv(f"{self.storage_directory}/OSM/analysis/{state_name}_ps_distances.csv")
-            driveways = pd.merge(driveways, ps_distances, on = ["link_id", "id"])
-        if os.path.exists(f"{self.storage_directory}/imagery/analysis/{state_name}_land_cover.csv"):
-            land_cover = pd.read_csv(f"{self.storage_directory}/imagery/analysis/{state_name}_land_cover.csv")
-            driveways = pd.merge(driveways, land_cover, on = ["link_id", "id"])
+            driveways = pd.merge(driveways, ps_distances, on = ["link_id", "id"], how = "left")
+        if os.path.exists(f"{self.storage_directory}/imagery/analysis/{state_name}.csv"):
+            land_cover = pd.read_csv(f"{self.storage_directory}/imagery/analysis/{state_name}.csv")
+            driveways = pd.merge(driveways, land_cover, on = ["link_id", "id"], how = "left")
         if os.path.exists(f"{self.storage_directory}/DGM/analysis/{state_name}.csv"):
             terrain_suitability = pd.read_csv(f"{self.storage_directory}/DGM/analysis/{state_name}_12.csv")
-            driveways = pd.merge(driveways, terrain_suitability, on = ["link_id", "id"])
+            driveways = pd.merge(driveways, terrain_suitability, on = ["link_id", "id"], how = "left")
 
         ##
         # compute central variables
@@ -71,6 +71,14 @@ class analysis_combine(analysis_abstract): #
         # get the distance score
         driveways["distance_score"] = driveways["distance_substation"].apply(lambda x: (driveways["distance_substation"].max() - x) / (driveways["distance_substation"].max() - driveways["distance_substation"].min()))
         driveways["distance_rank"] = driveways.distance_score.rank(method = "min", ascending = False)
+        # get the land cover score
+        driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road"]] = driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road"]].fillna(0)
+        driveways["land_cover_total_pixels"] = driveways["lc_background"] + driveways["lc_agriculture"] + driveways["lc_forest"] + driveways["lc_building"] + driveways["lc_road"]
+        driveways["land_cover_share_good"] = (driveways["lc_background"] + driveways["lc_agriculture"]) / driveways["land_cover_total_pixels"]
+        driveways["land_cover_share_restricted"] = driveways["lc_forest"] / driveways["land_cover_total_pixels"]
+        driveways["land_cover_share_prohibted"] = (driveways["lc_building"] + driveways["lc_road"]) / driveways["land_cover_total_pixels"]
+        driveways["land_cover_score"] = driveways["land_cover_share_good"] + 0.2 * driveways["land_cover_share_restricted"]
+        driveways["land_cover_rank"] = driveways.land_cover_score.rank(method = "min", ascending = False)
         # get the terrain score
         driveways["terrain_score"] = 1 - (driveways["terrain_roughness"] / 90)
         driveways["terrain_rank"] = driveways.terrain_score.rank(method = "min", ascending = False)
@@ -82,11 +90,18 @@ class analysis_combine(analysis_abstract): #
         driveways["overall_rank"] = driveways.overall_score.rank(method = "min", ascending = False)
         
         # add municipality information
-        driveways = driveways.sjoin(municipalities[["geometry", "NAME_4"]], predicate = "intersects").drop(columns = "index_right")
+        driveways = driveways.sjoin(municipalities[["geometry", "NAME_3"]], predicate = "intersects").drop(columns = "index_right")
         
         # fix names
-        driveways.NAME_4 = driveways.NAME_4.replace({r"BernaubeiBerlin": "Bernau bei Berlin",
-                                                     r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
+        driveways.NAME_3 = driveways.NAME_3.replace({r"BernaubeiBerlin": "Bernau bei Berlin",
+                                                   r"BrandenburganderHavel": "Brandenburg an der Havel",
+                                                   r"KönigsWusterhausen": "Königs Wusterhausen",
+                                                   r"MärkischeHeide": "Märkische Heide",
+                                                   r"NeuenhagenbeiBerlin": "Neuenhagen bei Berlin",
+                                                   r"RüdersdorfbeiBerlin": "Rüdersdorf bei Berlin",
+                                                   r"GranseeundGemeinden": "Gransee und Gemeinden",
+                                                   r"SchöneichebeiBerlin": "Schöneiche bei Berlin",
+                                                   r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
         
         # export the results as polygons
         driveways.to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_polygons_final.json")
@@ -101,14 +116,16 @@ class analysis_combine(analysis_abstract): #
         
         # read the kreis data
         kreis = gpd.read_file(self.storage_directory + "/borders/gadm41_DEU_2.json").to_crs(25833)
+        # fix names
+        kreis.NAME_2 = kreis.NAME_2.replace({r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
         # filter for brandenburg
         kreis = kreis.loc[(kreis.HASC_2.str.extract(r'((?<=DE\.)..(?=\.))') == state_name)[0], :]
         # get mean statistics
         tmp = gpd.sjoin(kreis, driveways, how = 'inner', predicate = 'intersects').reset_index()
         tmp["link_id_individual"] = tmp.link_id + "_" + str(tmp.id)
-        #
         kreis_stats = tmp.groupby('NAME_2').agg({'link_id_individual': "count",
                                                 'terrain_score': wm, 
+                                                'land_cover_score': wm, 
                                                 'irradiation_score': wm, 
                                                 'distance_score': wm,
                                                 'overall_score': wm}).reset_index()
@@ -119,31 +136,34 @@ class analysis_combine(analysis_abstract): #
         ##
         # merge and aggregate for gemeinde
         
-        # read the kreis data
-        gemeinde = gpd.read_file(self.storage_directory + "/borders/gadm41_DEU_3.json").to_crs(25833)
-        # filter for brandenburg
-        state_name_long = kreis.NAME_1.unique()[0]
-        gemeinde = gemeinde[gemeinde['NAME_1'] == state_name_long]
         # get mean statistics
-        tmp = gpd.sjoin(gemeinde, driveways, how = 'inner', predicate = 'intersects').reset_index()
-        tmp["link_id_individual"] = tmp.link_id + "_" + str(tmp.id)
-        gemeinde_stats = tmp.groupby('NAME_3').agg({'suitable_area': "sum",
+        driveways["link_id_individual"] = tmp.link_id + "_" + str(tmp.id)
+        gemeinde_stats = driveways.reset_index().groupby('NAME_3').agg({'suitable_area': "sum",
                                                     'link_id_individual': "count",
                                                 'terrain_score': wm, 
+                                                'land_cover_score': wm, 
                                                 'irradiation_score': wm, 
                                                 'distance_score': wm,
                                                 'overall_score': wm}).reset_index()
-        pd.merge(gemeinde[["NAME_3", "geometry"]], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').\
+        # export
+        pd.merge(municipalities[["NAME_3", "geometry"]], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').\
             to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_gemeinde_final.json", driver = 'GeoJSON')
         
         # copy the axiliary distance information
         shutil.copy(f"{self.storage_directory}/OSM/analysis/{state_name}_ps_auxiliary.csv", 
                     f"{out_dir}/assets/{state_name}_ps_auxiliary.csv") 
 
-        # copy the height profile images
         os.mkdir(f"{out_dir}/assets/imagery")
+        # copy the height profile images
+        os.mkdir(f"{out_dir}/assets/imagery/height_profile")
         shutil.copytree(f"{self.storage_directory}/DGM/analysis/imagery", 
-                    f"{out_dir}/assets/imagery", 
+                    f"{out_dir}/assets/imagery/height_profile", 
+                    dirs_exist_ok = True)
+        
+        # copy the rgb images
+        os.mkdir(f"{out_dir}/assets/imagery/rgb")
+        shutil.copytree(f"{self.storage_directory}/imagery/analysis/imagery/rgb", 
+                    f"{out_dir}/assets/imagery/rgb", 
                     dirs_exist_ok = True)
         
         # zip all results
