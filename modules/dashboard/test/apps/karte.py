@@ -10,16 +10,13 @@ import plotly.express as px
 
 import base64
 
-#from app import app
-external_stylesheets = [dbc.themes.BOOTSTRAP]
-
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+from app import app, path_directory
 
 # hardcoded paths
-BB_polygons_final = "ds_project/modules/dashboard/test/apps/assets/BB_polygons_final.json"
-BB_gemeinde_final = "ds_project/modules/dashboard/test/apps/assets/BB_gemeinde_final.json"
-BB_kreise_final = "ds_project/modules/dashboard/test/apps/assets/BB_kreis_final.json"
-BB_ps_auxiliary = "ds_project/modules/dashboard/test/apps/assets/BB_ps_auxiliary.csv"
+BB_polygons_final = path_directory + "apps/assets/BB_polygons_final.json"
+BB_gemeinde_final = path_directory + "apps/assets/BB_gemeinde_final.json"
+BB_kreise_final = path_directory + "apps/assets/BB_kreis_final.json"
+BB_ps_auxiliary = path_directory + "apps/assets/BB_ps_auxiliary.csv"
 
 ###
 # Driveways
