@@ -10,6 +10,8 @@ width: 1440
 height: 960
 ---
 
+## Motivation
+
 <!---
 ---------- ---------- ---------- ---------- ---------- ---------- ----------
 IMPORTANT INFORMATION FROM INSTRUCTIONS:
@@ -26,12 +28,6 @@ A presentation that motivates the central question,
 As part of the final presentation, students present the finished "product".
 ---------- ---------- ---------- ---------- ---------- ---------- ----------
 -->
-
-## Outline
-
-
-
-## Motivation
 
 - Germany has heavily relied on coal and gas (25% in 2010) (BDEW, 2022)
 - Climates pledges require a transition to renewable energy (Bundesregierung, 2022)
@@ -61,7 +57,7 @@ Figure credit: EnBW.com, solarbusinesshub.com, Xinhua News Agency via Getty Imag
 - The city of Tübingen realized that they could be utilized for PV
 - After several years of legal hassle, a site at the B28 in Lustnau is now the city's largest source of green energy
 
-![](fig/lustnauer_ohren.jpg){width="800"}
+![Lustnauer Ohren](fig/lustnauer_ohren.jpg){#fig-lo width="800"}
 
 ## Scaling across Germany
 
@@ -77,6 +73,13 @@ Figure credit: EnBW.com, solarbusinesshub.com, Xinhua News Agency via Getty Imag
 Satellite imagery of two highway turnoffs in Brandenburg (:copyright: GeoBasis-DE/LGB, OpenStreetMap)
 :::
 
+## Derivation of the project's objective
+
+* Illustrate potentials for renewable energies (PV) in a user-friendly way
+  + Online application as information desk for municipalities and citizens
+  + Alternative to complex expert reports
+  
+
 ## When is a turnoff suitable for PV? 
 
 - We held expert interviews with the Tübingen project lead and an expert geologist
@@ -90,13 +93,8 @@ Satellite imagery of two highway turnoffs in Brandenburg (:copyright: GeoBasis-D
       when bureaucratic hurdles arise
     + Consequently, authorities urged not to insist on 50-year-old regulations
     
-## Derivation of the project's objective
-
-* Illustrate potentials for renewable energies (PV) in a user-friendly way
-  + Online application as information desk for municipalities and citizens
-  + Alternative to complex expert reports
-    
-## Conclusions for contextual focus of our project
+  
+## Conclusions for contextual focus of our project {.smaller}
 
 Driving factors for one-off costs due to construction and operating costs:
 
@@ -123,7 +121,7 @@ Driving factors for one-off costs due to construction and operating costs:
   
 ## Economic Model 
 
-![The economic model used for the evaluation of turnoffs](fig/economic_model.png)
+![The economic model used for the evaluation of turnoffs](fig/economic_model.png){#fig-mo}
 
 ## Data acquisition
 
@@ -150,7 +148,7 @@ The complexity and the effort of the data acquisition is considered in the gradi
 - Identification of turnoffs from raw OSM data
   - Combined turnoff road segments with nearby road segments in a radius of 500m
 
-::: {#fig-turnoff-example layout-ncol=5}
+::: {#fig-turnoff-example-1 layout-ncol=5}
 
 ![](fig/driveways_example_1.jpg)
 
@@ -169,7 +167,7 @@ Example processing of a turnoff in Brandenburg (© GeoBasis-DE/LGB, OpenStreetMa
 
 #### Selected challenges
 
-::: {#fig-turnoff-example layout-ncol=2}
+::: {#fig-turnoff-example-2 layout-ncol=2}
 
 ![](fig/driveways_example_6.jpg)
 
@@ -200,7 +198,7 @@ The data should be validated, for example
   - Calculate slope between each raster cell and its 8 neighbors
   - Calculate standard deviation of slope and normalize with benchmark of 90 degrees
 
-![The height model of a selected driveway. The standard deviation of the slope is 4.68, the rating therefore 0.95 (© GeoBasis-DE/LGB)](fig/BB_ML_0104_14.png)
+![The height model of a selected driveway. The standard deviation of the slope is 4.68, the rating therefore 0.95 (© GeoBasis-DE/LGB)](fig/BB_ML_0104_14.png){#fig-terrain}
 
 ## Data analysis
 
@@ -218,18 +216,17 @@ The data should be validated, for example
 
 
 
-## Land cover classification
+## Land cover segmentation {.smaller}
 
 * Problem: precisely predict the areal distribution of relevant features
-  + high vegetation, low vegetation, buildings, etc.
+  + High vegetation, low vegetation, buildings, etc.
 
-* Task: Image segmentation
+* Solution: Image segmentation
   * Divide image into regions belonging to different semantic classes.
-    + Task of pixel-based classification
-    + Pixel-wise mask for each object in the image
-  * Output (class per pixel) is the same size as the input (pixel)
+    + Pixel-based classification
+    + Pixel-wise mask for each object/unit in the image
 
-![](fig/segmentation.png){height="500"}
+![](fig/segmentation.png){height="400"}
 
 Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
 
@@ -237,12 +234,17 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
 The structure and distribution of the data as well as the relations and results of the data analysis.
 -->
 
-## Training data - Postdam 
+## Training data - Postdam {.smaller}
 
 Potsdam 2D Semantic Segmentation dataset for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)
 
-![](fig/potsdam_labels.png){height="500"}
+:::: {.columns}
 
+::: {.column width="65%"}
+![](fig/potsdam_labels.png){height="450"}
+:::
+
+::: {.column width="35%"}
 | Label | Color |
 |---------|---------|
 | 1.) Impervious surfaces | white |
@@ -251,12 +253,18 @@ Potsdam 2D Semantic Segmentation dataset for the German city Potsdam, provided b
 | 4.) Tree | green |
 | 5.) Car | yellow |
 | 6.) Clutter/background | red |
+:::
+
+::::
+
+
+
 
 Data Source: 2D Semantic Labeling Contest - Potsdam. Available online: https://www.isprs.org/education/benchmarks/UrbanSemLab/default.aspx (accessed on 14 December 2022).
 
-## Training data - Postdam 
+## Training data - Postdam {.smaller}
 
-Advantages:
+#### Advantages
 
 * Aerial images, not satellite images
   + High resolution (6,000 px × 6,000 px with 5 cm ground res.)
@@ -264,43 +272,55 @@ Advantages:
   + Best dataset for German pixel-based labels
   + Classes are useful for our segmentation problem
 
-Disadvantages:
-
 #### Disadvantages
 * Urban structures, whereas in ears more rural structures
   + Rural structures are characterised by greater contiguous areas, like forests
   + Narrow, detailed urban structure in training creates fuzzy predictions for ears
-* Giving greater weight to classes "tree" and "low vegetation"
+
+**Weight Biasing:** Giving greater weight to classes "tree" and "low vegetation"
+
   + Improves detection of organic structures
   + Good in detecting single trees, but not forests
     
-## Training data - Postdam 
+## Training data - Postdam {.smaller}
 
-![](fig/potsdam_pred1.jpeg){height="250"}
-![](fig/potsdam_pred2.jpeg){height="250"}
+
+![](fig/potsdam_pred1.jpeg)
+
+![](fig/potsdam_pred2.jpeg)
+
 Color Labels: White - Impervious surfaces; Light-blue - Low vegetation; Green - Tree
 
-## Training data - LoveDA (Nanjing, Changzhou and Wuhan / China)
+## Training data - LoveDA {.smaller}
 
-Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
+#### Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
+
 + High spatial resolution land-cover mapping (spatial resolution of 30 cm)
 + Source Google Earth platform
++ Nanjing, Changzhou and Wuhan / China
 
-![](fig/LoveDA_labels.jpeg){height="250"}
+:::: {.columns}
 
+::: {.column width="65%"}
+![](fig/LoveDA_labels.jpeg)
+:::
+
+::: {.column width="35%"}
 | Label | Color |
 |---------|---------|
 | 1.) Background | white |
-| 2.) Building | blue |
-| 3.) Road | light-blue |
-| 4.) Water | green |
-| 5.) Barren | yellow |
-| 6.) Forest | red |
-| 7.) Agriculture | red |
-| 0.) Unknown | red |
+| 2.) Building | pink |
+| 3.) Road | red |
+| 4.) Water | blue |
+| 5.) Barren | gray |
+| 6.) Forest | green |
+| 7.) Agriculture | yellow |
+| 0.) Unknown | black |
+:::
 
+::::
 
-## Training data - China (regions of Nanjing, Changzhou and Wuhan)
+## Training data - China  {.smaller}
 
 #### Advantages
 
@@ -316,24 +336,13 @@ Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
 * Satellite images (vs. aerial images from Brandenburg)
 * [Less detailed labeling compared to Potsdam dataset]
   + Useful in training for the recognition of larger contiguous areas, but not individual trees
+* China vs. Germany
+  + Different geography
   
 <!--- Add picture of example ear here to stress out classes. -->
-  
-## Land cover classification
-
-#### Analysis tool: Image segmentation
-
-* Divide image into regions belonging to different semantic classes.
-  + Task of pixel-based classification
-  + Pixel-wise mask for each object in the image
-* Output (class per pixel) is the same size as the input (pixel)
-
-![](fig/segmentation.png){height="500"}
-
-Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
 
 
-## Semantic Segmentation - UNet
+## Semantic Segmentation - UNet {.smaller}
 
 * Output (class per pixel) is the same size as the input (pixel)
 * Network consists of a contracting path (downsampling) and an expansive path (upsampling) (Stevens et al., 2020b)
@@ -341,25 +350,25 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
     - Specific, detailed detectors (e.g. texture, color, characterising shapes)
     - Information reduction to relevant feature information
   + Upsampling:
-  - Combination of the feature and spatial information
-  - Extracting high-resolution features
+    - Combination of the feature and spatial information
+    - Extracting high-resolution features
 * U-shaped network architecture: Early breakthrough for image segmentation
 
-| Model | Advantages | Disadv. |
-|---------|---------|---------|
-| UNet | - widely used basic segmentation model | - training from scratch
-|      | - feedback from interim presentation | - model overfits to training data
-|      | - good starting point | - labelled data not specific for our task
+| Advantages | Disadv. |
+|---------|---------|
+| - widely used basic segmentation model | - training from scratch
+| - feedback from interim presentation | - model overfits to training data
+| - good starting point | - labelled data not specific for our task
 
-## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)
+## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019) {.smaller}
 
 * Residual networks (ResNets) allow very deep networks to be successfully trained (Stevens et al., 2020a)
   + Deep networks represent very complex functions
   + Problem with large networks: Gradient signal that goes to zero
-   - Large number of multiplications, the gradient can decrease exponentially quickly to zero 
+    - Large number of multiplications, the gradient can decrease exponentially quickly to zero 
   + Skip Connections: Additional layers do not hurt the model’s performance as regularisation will skip over them if those layers were not useful
   
-## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)
+## Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019) {.smaller}
   
 * Transfer learning using pre-trained model backbones
   + Transfer knowledge learned from source dataset (BigEarthNet) to target dataset (training)
@@ -368,13 +377,13 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
 * Pre-trained on BigEarthNet dataset
   + Atmospherically corrected satellite images from different seasons
   + 10 European countries
-  + multiple land-cover classes (tile classifcation task, not segmentation)
+  + Multiple land-cover classes (tile classification task, not segmentation)
 
-| Model | Advantages | Disadv. |
-|---------|---------|---------|
-| ResNet50 | - pre-trained weights | - trained for classification task
-| + BigEarthNet | - seasonal satellite images | - inferior predictions
-|      | - big dataset on European countries |
+| Advantages | Disadv. |
+|---------|---------|
+| - pre-trained weights | - trained for classification task
+| - seasonal satellite images | - inferior predictions
+| - big dataset on European countries |
 
 ## Semantic Segmentation - ResNet101 + COCO (Lin et al., 2014)
 
@@ -382,43 +391,53 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
   + Large-scale object detection and segmentation dataset
   + Recognition in context (background awareness)
 
-| Model | Advantages | Disadv. |
-|---------|---------|---------|
-| ResNet101 | - pre-trained weights | - COCO dataset
-| + COCO    | - segmentation task | - trained for *object* segmentation
-|      | - superior predictions after few training iterations |
-|      | - least overfitting |
-|      | - complexity of model seems to fit task|
+| Advantages | Disadv. |
+|---------|---------|
+| - pre-trained weights | - COCO dataset contains vastly different objects (no aerial images)
+| - segmentation task | 
+| - superior predictions after few training iterations |
+| - least overfitting |
+| - complexity of model seems to fit task|
 
-## Semantic Segmentation - ResNet101 + COCO - Results
+## Semantic Segmentation - ResNet101 + COCO - Results {.smaller}
 
 * Recognition of small forest areas very good.
 * Individual trees are partly not recognized.
 * Shadow areas are not always clearly assigned.
 
-![](fig/resnet101_pred3.jpeg){height="500"}
+![](fig/resnet101_pred3.jpeg)
+
 Color Labels: White - Impervious surfaces; Red - Road; Green - Trees
 
-## Semantic Segmentation - ResNet101 + COCO - Results
+## Semantic Segmentation - ResNet101 + COCO - Results {.smaller}
 
 * Agricultural areas are better recognized when they are planted.
 * Similar results for single trees that are leafy or bare.
 
 ![](fig/resnet101_pred2.jpeg){height="500"}
+
 Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Yellow - Agricultur
 
-## Semantic Segmentation - ResNet101 + COCO - Results
+## Semantic Segmentation - ResNet101 + COCO - Results {.smaller}
 
 * Road recognition is so good that you could use it to identify the shape of an ear.
 * Even small buildings in shaded areas are detected.
 * The model is trained to recognise organic structures very well (characteristic for landscape in ears), however, human-made structures (fields, buildings) are therefore less regular.
 
 ![](fig/resnet101_pred1.jpeg){height="500"}
+
 Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Pink - Building
 
-## Presentation of the result - Dashboard (Jan)
+## Presentation of the result - Dashboard
 
-## References
+\
+\
+
+::: {.r-fit-text}
+http://solarexit.de/
+:::
+
+## References {.scrollable}
 
 * DER SPIEGEL. (2022, November 23, 0:50). Die Klima-Streber: Tübingens Weg in die Energiewende | SPIEGEL TV [Video]. YouTube. https://www.youtube.com/watch?v=WywER5wRLEI.
 * Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., ... & Zitnick, C. L. (2014). Microsoft coco: Common objects in context. In Computer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 (pp. 740-755). Springer International Publishing.
