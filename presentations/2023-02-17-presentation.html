@@ -336,15 +336,34 @@ Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz
 </div>
 
 </section>
+<section class="slide level2">
+
+<!---
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+IMPORTANT INFORMATION FROM INSTRUCTIONS:
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+In the final presentation, they show the
+- completed project,
+- the central structure of the code, and
+- how users can interact with the result.
+
+A presentation that motivates the central question,
+- derives its relevance, and
+- that refers to relevant literature as appropriate.
+
+As part of the final presentation, students present the finished "product".
+---------- ---------- ---------- ---------- ---------- ---------- ----------
+-->
+</section>
 <section id="outline" class="slide level2">
 <h2>Outline</h2>
 </section>
 <section id="motivation" class="slide level2">
 <h2>Motivation</h2>
 <ul>
-<li><p>Germany has for the longest time relied heavily on coal and gas (25% in 2010)</p></li>
-<li><p>Climates pledges require a rapid transition to renewable energy</p></li>
-<li><p>Wind parks often face opposition from local communities</p></li>
+<li><p>Germany has heavily relied on coal and gas (25% in 2010) (BDEW, 2022)</p></li>
+<li><p>Climates pledges require a transition to renewable energy (Bundesregierung, 2022)</p></li>
+<li><p>Wind parks often face opposition from local communities (DW, 2022)</p></li>
 <li><p>Solar energy is a promising alternative because of its low footprint</p></li>
 <li><p>Photovoltaics (PV) can be installed in places with little alternative use</p>
 <ul>
@@ -368,6 +387,7 @@ Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz
 <p></p><figcaption>Figure&nbsp;1: Experimental PV installation spots</figcaption><p></p>
 </figure>
 </div>
+<p>Figure credit: EnBW.com, solarbusinesshub.com, Xinhua News Agency via Getty Images</p>
 </section>
 <section id="pv-in-highway-turnoffs-the-idea" class="slide level2">
 <h2>PV in highway turnoffs: The idea</h2>
@@ -394,7 +414,7 @@ Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz
 <p><img data-src="fig/BB_ML_0123_2018-04-18.jpg"></p>
 </div>
 </div>
-<p></p><figcaption>Figure&nbsp;2: Satellite imagery of two highway turnoffs in Brandenburg</figcaption><p></p>
+<p></p><figcaption>Figure&nbsp;2: Satellite imagery of two highway turnoffs in Brandenburg (:copyright: GeoBasis-DE/LGB, OpenStreetMap)</figcaption><p></p>
 </figure>
 </div>
 </section>
@@ -403,8 +423,510 @@ Jan Besler, Yvette Bodry, Marvin Hoberg, Felix Schulz
 <ul>
 <li>We held expert interviews with the Tübingen project lead and an expert geologist</li>
 </ul>
-<p>https://solarbusinesshub.com/2015/04/10/bike-path-on-koreas-highway-covered-with-solar-panels/</p>
-<p>Xinhua News Agency via Getty Images</p>
+</section>
+<section id="insights-from-pilot-project-lustnauer-ohren" class="slide level2">
+<h2>Insights from pilot project “Lustnauer Ohren”</h2>
+<ul>
+<li>Pilot project: 8 weeks construction and 8 years approval (DER SPIEGEL, 2022)</li>
+<li>Nowadays:
+<ul>
+<li>More awareness and pressure from the public</li>
+<li>Direct communication with the public via social media when bureaucratic hurdles arise</li>
+<li>Consequently, authorities urged not to insist on 50-year-old regulations</li>
+</ul></li>
+</ul>
+</section>
+<section id="derivation-of-the-projects-objective" class="slide level2">
+<h2>Derivation of the project’s objective</h2>
+<ul>
+<li>Illustrate potentials for renewable energies (PV) in a user-friendly way
+<ul>
+<li>Online application as information desk for municipalities and citizens</li>
+<li>Alternative to complex expert reports</li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusions-for-contextual-focus-of-our-project" class="slide level2">
+<h2>Conclusions for contextual focus of our project</h2>
+<p>Driving factors for one-off costs due to construction and operating costs:</p>
+<ul>
+<li>Environmental assessment for compensation areas
+<ul>
+<li>Nature in a potential ear is under protection (§ 44 Naturschutz Gesetz)</li>
+<li>PV plant is an encroachment on the landscape</li>
+<li>Woody plants such as bushes and trees are assessed differently (i.a. according to size, age)</li>
+<li>Compensation areas must be equivalent or greater and geographically close</li>
+<li>If landowner of the ear has no free compensation areas, they need to be must be rented (lease fees)
+<ul>
+<li>landowner for federal roads is the Regional Council of the county (in German: Regierungsbezirk)</li>
+<li>for motorways the Autobahn GmbH/ indirectly the federal government)</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>Note: The environmental assessment determines one-off costs and long-term profitability of the PV.</p>
+</section>
+<section id="conclusions-for-our-project-from-insights-pilot-project" class="slide level2">
+<h2>Conclusions for our project from insights (pilot project)</h2>
+<p>Driving factors for one-off costs due to construction and operating costs:</p>
+<ul>
+<li>Distance to grid</li>
+<li>Meteorological details: Sunshine hours</li>
+<li>Geographical details: Ground conditions and slope</li>
+<li>[Sky alignment of the road]
+<ul>
+<li>Due to the technical innovations of recent years, the factor is less important nowadays as PVs can be built more flexibly than in Lustnau (insight from interview with Prof.&nbsp;Thomas Scholten)</li>
+</ul></li>
+</ul>
+</section>
+<section id="economic-model" class="slide level2">
+<h2>Economic Model</h2>
+
+<img data-src="fig/economic_model.png" class="r-stretch quarto-figure-center"><p class="caption">The economic model used for the evaluation of turnoffs</p></section>
+<section id="data-acquisition" class="slide level2">
+<h2>Data acquisition</h2>
+<ul>
+<li>Built a data pipeline to automatically download and process all data sources</li>
+<li>All data is publicly available and free of charge</li>
+<li>In total, 5 sources of data are utilized for final product</li>
+</ul>
+<h4 id="selected-challenges">Selected challenges</h4>
+<ul>
+<li>Satellite imagery is needed in very fine resolution to allow segmentation
+<ul>
+<li>Thousands of accesses to a WebMapService API to download data in tiles</li>
+<li>Lossless storage of 106GB of imagery</li>
+</ul></li>
+<li>Processing of OSM source data is very resource-intensive
+<ul>
+<li>Utilized bwUniCluster for processing and mass data storage</li>
+</ul></li>
+</ul>
+<!---
+The complexity and the effort of the data acquisition is considered in the grading of the project.
+-->
+</section>
+<section id="data-preparation" class="slide level2">
+<h2>Data preparation</h2>
+<h4 id="selected-challenges-1">Selected challenges</h4>
+<ul>
+<li>Identification of turnoffs from raw OSM data
+<ul>
+<li>Combined turnoff road segments with nearby road segments in a radius of 500m</li>
+</ul></li>
+</ul>
+<div id="fig-turnoff-example" class="quarto-layout-panel">
+<figure>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_1.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_2.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_3.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_4.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_5.jpg"></p>
+</div>
+</div>
+<p></p><figcaption>Figure&nbsp;3: Example processing of a turnoff in Brandenburg (© GeoBasis-DE/LGB, OpenStreetMap)</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="data-preparation-1" class="slide level2">
+<h2>Data preparation</h2>
+<h4 id="selected-challenges-2">Selected challenges</h4>
+<div id="fig-turnoff-example" class="quarto-layout-panel">
+<figure>
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_6.jpg"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img data-src="fig/driveways_example_7.jpg"></p>
+</div>
+</div>
+<p></p><figcaption>Figure&nbsp;4: Example processing of a turnoff in Brandenburg (continued) (© GeoBasis-DE/LGB, OpenStreetMap)</figcaption><p></p>
+</figure>
+</div>
+<!---
+The data are read in and made ready for computation and estimation.
+- different parts of the data sets are read in and merged
+- correct identifiers for cross-sectional units (e.g., companies, brands, products, countries, persons) and for time points are generated
+-->
+<!---
+* Data validation
+The data should be validated, for example
+- by generating descriptive statistics and figures and by identifying implausible observations and outliers
+- criteria for validation, this process should also take place largely without the users’ intervention
+-->
+</section>
+<section id="data-analysis" class="slide level2">
+<h2>Data analysis</h2>
+<h4 id="selected-challenges-3">Selected challenges</h4>
+<ul>
+<li>How to remotely sense potential issues with uneven terrain?
+<ul>
+<li>Use elevation model of finest resolution available (1m)</li>
+<li>Calculate slope between each raster cell and its 8 neighbors</li>
+<li>Calculate standard deviation of slope and normalize with benchmark of 90 degrees</li>
+</ul></li>
+</ul>
+
+<img data-src="fig/BB_ML_0104_14.png" class="r-stretch quarto-figure-center"><p class="caption">The height model of a selected driveway. The standard deviation of the slope is 4.68, the rating therefore 0.95 (© GeoBasis-DE/LGB)</p></section>
+<section id="data-analysis-1" class="slide level2">
+<h2>Data analysis</h2>
+<h4 id="results">Results</h4>
+<ul>
+<li><p>Spatial data is aggregated within polygons of the turnoffs:</p>
+<ul>
+<li>Segmentation of satellite imagery into 6 classes</li>
+<li>Calculation of the slope</li>
+<li>Calculation of the average distance to the grid</li>
+<li>Calculation of the average sunshine intensity</li>
+</ul></li>
+<li><p>Runtime after data acquisition: &gt;8 hours</p></li>
+<li><p>Survey encompasses <strong>206</strong> turnoffs, <strong>1253</strong> polygons, <strong>&gt;6,5</strong> km² of potential area</p></li>
+</ul>
+<!---
+The primary focus of the project is a relevant substantive question, which can, but does not necessarily have to be of an economic nature.
+- relation between to variables (correlational or causal)
+- prediction of economic conditions (predictive analytics)
+- corresponding analysis should be implemented with adequate methods (traditional statistics or machine learning).
+-->
+</section>
+<section id="training-data---postdam" class="slide level2">
+<h2>Training data - Postdam</h2>
+<p>First choice training dataset: Semantic Labeling Benchmark data for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)</p>
+<p><img data-src="fig/potsdam_labels.png" height="500"></p>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Color</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.) Impervious surfaces</td>
+<td>white</td>
+</tr>
+<tr class="even">
+<td>2.) Building</td>
+<td>blue</td>
+</tr>
+<tr class="odd">
+<td>3.) Low vegetation</td>
+<td>light-blue</td>
+</tr>
+<tr class="even">
+<td>4.) Tree</td>
+<td>green</td>
+</tr>
+<tr class="odd">
+<td>5.) Car</td>
+<td>yellow</td>
+</tr>
+<tr class="even">
+<td>6.) Clutter/background</td>
+<td>red</td>
+</tr>
+</tbody>
+</table>
+<p>Data Source: 2D Semantic Labeling Contest - Potsdam. Available online: https://www.isprs.org/education/benchmarks/UrbanSemLab/default.aspx (accessed on 14 December 2022).</p>
+</section>
+<section id="training-data---postdam-1" class="slide level2">
+<h2>Training data - Postdam</h2>
+<h4 id="advantages">Advantages</h4>
+<ul>
+<li>Aerial images, not just satellite
+<ul>
+<li>High resolution (6,000 px × 6,000 px with 5 cm ground res.)</li>
+</ul></li>
+<li>Precise and reliable labeling
+<ul>
+<li>Best dataset for German pixel-based labels</li>
+<li>Useful classes, apart from cars</li>
+</ul></li>
+</ul>
+<h4 id="disadvantages">Disadvantages</h4>
+<ul>
+<li>Urban structures, whereas in ears more rural structures
+<ul>
+<li>Rural structures are characterised by greater contiguous areas, like forests</li>
+<li>Narrow, detailed urban structure in training creates fuzzy predictions for ears</li>
+<li>Giving greater weight to classes “tree” and “low vegetation”
+<ul>
+<li>Improves detection of organic structures</li>
+<li>Good in detecting single trees, but not forests</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="training-data---postdam-2" class="slide level2">
+<h2>Training data - Postdam</h2>
+<p><img data-src="fig/potsdam_pred1.jpeg" height="250"> <img data-src="fig/potsdam_pred2.jpeg" height="250"> Color Labels: White - Impervious surfaces; Light-blue - Low vegetation; Green - Tree</p>
+</section>
+<section id="training-data---china-regions-of-nanjing-changzhou-and-wuhan" class="slide level2">
+<h2>Training data - China (regions of Nanjing, Changzhou and Wuhan)</h2>
+<p>Second choice training dataset: Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset</p>
+<ul>
+<li>High spatial resolution land-cover mapping (spatial resolution of 30 cm)</li>
+<li>Source Google Earth platform</li>
+</ul>
+<p><img data-src="fig/LoveDA_labels.jpeg" height="250"></p>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Color</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.) Background</td>
+<td>white</td>
+</tr>
+<tr class="even">
+<td>2.) Building</td>
+<td>blue</td>
+</tr>
+<tr class="odd">
+<td>3.) Road</td>
+<td>light-blue</td>
+</tr>
+<tr class="even">
+<td>4.) Water</td>
+<td>green</td>
+</tr>
+<tr class="odd">
+<td>5.) Barren</td>
+<td>yellow</td>
+</tr>
+<tr class="even">
+<td>6.) Forest</td>
+<td>red</td>
+</tr>
+<tr class="odd">
+<td>7.) Agriculture</td>
+<td>red</td>
+</tr>
+<tr class="even">
+<td>0.) Unknown</td>
+<td>red</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="training-data---china-regions-of-nanjing-changzhou-and-wuhan-1" class="slide level2">
+<h2>Training data - China (regions of Nanjing, Changzhou and Wuhan)</h2>
+<h4 id="advantages-1">Advantages</h4>
+<ul>
+<li>Dataset differentiates between rural and urban images
+<ul>
+<li>More rural scenes, but quite balanced dataset (2713 urban, 3274 rural)</li>
+</ul></li>
+<li>Dataset created with the intention of achieving model transferability
+<ul>
+<li>“[U]rban and rural scenes can show completely different geographical landscapes, and the inadequate [generalization] of these algorithms hinders city-level or national-level mapping” (Wang et al., 2022, p.&nbsp;1)</li>
+<li>Dataset encounters for: 1) multi-scale objects; 2) complex background samples; 3) inconsistent class distributions</li>
+</ul></li>
+</ul>
+<h4 id="disadvantages-1">Disadvantages</h4>
+<ul>
+<li>Lower resolution than images from Brandenburg (30 cm vs.&nbsp;20 cm, respectively)</li>
+<li>Satellite images (vs.&nbsp;aerial images from Brandenburg)</li>
+<li>[Less detailed labeling compared to Potsdam dataset]
+<ul>
+<li>Useful in training for the recognition of larger contiguous areas, but not individual trees</li>
+</ul></li>
+</ul>
+</section>
+<section id="land-cover-classification" class="slide level2">
+<h2>Land cover classification</h2>
+<p>Goal: Detect features in aerial images * Classes of interest + Agriculture + Buildings + Forest and Trees + Other</p>
+<!--- Add picture of example ear here to stress out classes. -->
+</section>
+<section id="land-cover-classification-1" class="slide level2">
+<h2>Land cover classification</h2>
+<h4 id="analysis-tool-image-segmentation">Analysis tool: Image segmentation</h4>
+<ul>
+<li>Divide image into regions belonging to different semantic classes.
+<ul>
+<li>Task of pixel-based classification</li>
+<li>Pixel-wise mask for each object in the image</li>
+</ul></li>
+<li>Output (class per pixel) is the same size as the input (pixel)</li>
+</ul>
+<p><img data-src="fig/segmentation.png" height="500"></p>
+<p>Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). </p>
+</section>
+<section id="semantic-segmentation---unet" class="slide level2">
+<h2>Semantic Segmentation - UNet</h2>
+<ul>
+<li>Output (class per pixel) is the same size as the input (pixel)</li>
+<li>Network consists of a contracting path (downsampling) and an expansive path (upsampling) (Stevens et al., 2020b)
+<ul>
+<li>Downsampling:
+<ul>
+<li>Specific, detailed detectors (e.g.&nbsp;texture, color, characterising shapes)</li>
+<li>Information reduction to relevant feature information</li>
+</ul></li>
+<li>Upsampling:</li>
+<li>Combination of the feature and spatial information</li>
+<li>Extracting high-resolution features</li>
+</ul></li>
+<li>U-shaped network architecture: Early breakthrough for image segmentation</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Advantages</th>
+<th>Disadv.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>UNet</td>
+<td>- widely used basic segmentation model</td>
+<td>- training from scratch</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>- feedback from interim presentation</td>
+<td>- model overfits to training data</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- good starting point</td>
+<td>- labelled data not specific for our task</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="semantic-segmentation---resnet50-bigearthnet-sumbul-et-al.-2019" class="slide level2">
+<h2>Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)</h2>
+<ul>
+<li>Residual networks (ResNets) allow very deep networks to be successfully trained (Stevens et al., 2020a)
+<ul>
+<li>Deep networks represent very complex functions</li>
+<li>Problem with large networks: Gradient signal that goes to zero</li>
+<li>Large number of multiplications, the gradient can decrease exponentially quickly to zero</li>
+<li>Skip Connections: Additional layers do not hurt the model’s performance as regularisation will skip over them if those layers were not useful</li>
+</ul></li>
+</ul>
+</section>
+<section id="semantic-segmentation---resnet50-bigearthnet-sumbul-et-al.-2019-1" class="slide level2">
+<h2>Semantic Segmentation - ResNet50 + BigEarthNet (Sumbul et al., 2019)</h2>
+<ul>
+<li>Transfer learning using pre-trained model backbones
+<ul>
+<li>Transfer knowledge learned from source dataset (BigEarthNet) to target dataset (training)</li>
+<li>Model can already extract more general image features (e.g.&nbsp;textures, shapes)</li>
+</ul></li>
+<li>Pre-trained on BigEarthNet dataset
+<ul>
+<li>Atmospherically corrected satellite images from different seasons</li>
+<li>10 European countries</li>
+<li>multiple land-cover classes (tile classifcation task, not segmentation)</li>
+</ul></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Advantages</th>
+<th>Disadv.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ResNet50</td>
+<td>- pre-trained weights</td>
+<td>- trained for classification task</td>
+</tr>
+<tr class="even">
+<td>+ BigEarthNet</td>
+<td>- seasonal satellite images</td>
+<td>- inferior predictions</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- big dataset on European countries</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="semantic-segmentation---resnet101-coco-lin-et-al.-2014" class="slide level2">
+<h2>Semantic Segmentation - ResNet101 + COCO (Lin et al., 2014)</h2>
+<ul>
+<li>Pre-trained on COCO (Common Objects in Context) dataset
+<ul>
+<li>Large-scale object detection and segmentation dataset</li>
+<li>Recognition in context (background awareness)</li>
+</ul></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Advantages</th>
+<th>Disadv.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ResNet101</td>
+<td>- pre-trained weights</td>
+<td>- COCO dataset</td>
+</tr>
+<tr class="even">
+<td>+ COCO</td>
+<td>- segmentation task</td>
+<td>- trained for <em>object</em> segmentation</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- superior predictions after few training iterations</td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>- least overfitting</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- complexity of model seems to fit task</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="presentation-of-the-result---dashboard-jan" class="slide level2">
+<h2>Presentation of the result - Dashboard (Jan)</h2>
+</section>
+<section id="references" class="slide level2">
+<h2>References</h2>
+<ul>
+<li>DER SPIEGEL. (2022, November 23, 0:50). Die Klima-Streber: Tübingens Weg in die Energiewende | SPIEGEL TV [Video]. YouTube. https://www.youtube.com/watch?v=WywER5wRLEI.</li>
+<li>Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., … &amp; Zitnick, C. L. (2014). Microsoft coco: Common objects in context. In Computer Vision–ECCV 2014: 13th European Conference, Zurich, Switzerland, September 6-12, 2014, Proceedings, Part V 13 (pp.&nbsp;740-755). Springer International Publishing.</li>
+<li>Stevens, E., Antiga, L., &amp; Viehmann, T. (2020a). Using convolutions to generalize (Chapter 8). In Deep learning with PyTorch. Manning Publications.</li>
+<li>Stevens, E., Antiga, L., &amp; Viehmann, T. (2020b). Using segmentation to find suspected nodules (Chapter 13). In Deep learning with PyTorch. Manning Publications.</li>
+<li>Sumbul, G., Charfuelan, M., Demir, B., &amp; Markl, V. (2019). Bigearthnet: A large-scale benchmark archive for remote sensing image understanding. In IGARSS 2019-2019 IEEE International Geoscience and Remote Sensing Symposium (pp.&nbsp;5901-5904). IEEE.</li>
+<li>Wang, J., Zheng, Z., Ma, A., Lu, X., &amp; Zhong, Y. (2022). LoveDA: A remote sensing land-cover dataset for domain adaptive semantic segmentation. arXiv preprint arXiv:2110.08733v6 [cs.CV].</li>
+</ul>
 <div class="footer footer-default">
 
 </div>
