@@ -20,3 +20,5 @@ presentations/2022-11-07-presentation.log
 
 /model/wandb
 /pfs/data5/home/tu/tu_tu/tu_zxoau27/ds_project/model/wandb
+model/data
+model/weights
