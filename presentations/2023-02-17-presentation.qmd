@@ -166,7 +166,80 @@ The primary focus of the project is a relevant substantive question, which can, 
 The structure and distribution of the data as well as the relations and results of the data analysis.
 -->
 
-## Training data (Marvin)
+## Training data - Postdam 
+
+
+First choice training dataset: Semantic Labeling Benchmark data for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)
+
+![](fig/potsdam_labels.png){height="500"}
+
+| Label | Color |
+|---------|---------|
+| 1.) Impervious surfaces | white |
+| 2.) Building | blue |
+| 3.) Low vegetation | light-blue |
+| 4.) Tree | green |
+| 5.) Car | yellow |
+| 6.) Clutter/background | red |
+
+Data Source: 2D Semantic Labeling Contest - Potsdam. Available online: https://www.isprs.org/education/benchmarks/UrbanSemLab/default.aspx (accessed on 14 December 2022).
+
+## Training data - Postdam 
+
+Advantages
+* Aerial images, not just satellite
+  + High resolution (6,000 px × 6,000 px with 5 cm ground res.)
+* Precise and reliable labeling
+  + Best dataset for German pixel-based labels
+  + Useful classes, apart from cars
+
+Disadvantages
+* Urban structures, whereas in ears more rural structures
+  + Rural structures are characterised by greater contiguous areas, like forests
+  + Narrow, detailed urban structure in training creates fuzzy predictions for ears
+  + Giving greater weight to classes "tree" and "low vegetation"
+    - Improves detection of organic structures
+    - Good in detecting single trees, but not forests
+    
+## Training data - Postdam 
+
+![](fig/potsdam_pred1.jpeg){height="250"}
+![](fig/potsdam_pred2.jpeg){height="250"}
+Color Labels: White - Impervious surfaces; Light-blue - Low vegetation; Green - Tree
+
+## Training data - China (regions of Nanjing, Changzhou and Wuhan)
+
+Second choice training dataset: Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
++ High spatial resolution land-cover mapping (spatial resolution of 30 cm)
++ Source Google Earth platform
+
+![](fig/LoveDA_labels.jpeg){height="250"}
+
+| Label | Color |
+|---------|---------|
+| 1.) Background | white |
+| 2.) Building | blue |
+| 3.) Road | light-blue |
+| 4.) Water | green |
+| 5.) Barren | yellow |
+| 6.) Forest | red |
+| 7.) Agriculture | red |
+| 0.) Unknown | red |
+
+## Training data - China (regions of Nanjing, Changzhou and Wuhan)
+
+Advantages
+* Dataset differentiates between rural and urban images
+  + More rural scenes, but quite balanced dataset (2713 urban, 3274 rural)
+* Dataset created with the intention of achieving model transferability
+  + "[U]rban and rural scenes can show completely different geographical landscapes, and the inadequate [generalization] of these algorithms hinders city-level or national-level mapping" (Wang et al., 2022, p. 1)
+  + Dataset encounters for: 1) multi-scale objects; 2) complex background samples; 3) inconsistent class distributions
+  
+Disadvantages
+* Lower resolution than images from Brandenburg (30 cm vs. 20 cm, respectively)
+* Satellite images (vs. aerial images from Brandenburg)
+* [Less detailed labeling compared to Potsdam dataset]
+  + Useful in training for the recognition of larger contiguous areas, but not individual trees
 
 ## Land cover classification
 
@@ -258,3 +331,4 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
 * Stevens, E., Antiga, L., & Viehmann, T. (2020a). Using convolutions to generalize (Chapter 8). In Deep learning with PyTorch. Manning Publications.
 * Stevens, E., Antiga, L., & Viehmann, T. (2020b). Using segmentation to find suspected nodules (Chapter 13). In Deep learning with PyTorch. Manning Publications.
 * Sumbul, G., Charfuelan, M., Demir, B., & Markl, V. (2019). Bigearthnet: A large-scale benchmark archive for remote sensing image understanding. In IGARSS 2019-2019 IEEE International Geoscience and Remote Sensing Symposium (pp. 5901-5904). IEEE.
+* Wang, J., Zheng, Z., Ma, A., Lu, X., & Zhong, Y. (2022). LoveDA: A remote sensing land-cover dataset for domain adaptive semantic segmentation. arXiv preprint  arXiv:2110.08733v6 [cs.CV].
