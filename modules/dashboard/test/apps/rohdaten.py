@@ -5,17 +5,47 @@ import numpy as np
 from dash import Dash, html, dcc, dash_table
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 
 from app import app, path_directory
-
+# --------------
 # import data
+# --------------
+# kreise
 kreise_df = pd.read_csv(path_directory + 'apps/assets/kreise_df.csv')
 # rename and drop columns
-kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
+kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung'
+    })
+# Reorder the columns
+column_order = ['Landkreis', 'Bundesland', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
+kreise_df = kreise_df.reindex(columns=column_order)
 
-# good if there are many options
-Bundesland_unique = kreise_df['Bundesland'].unique()
-Bundesland_options = [{'label': item, 'value': item} for item in np.sort(kreise_df['Bundesland'].unique())]
+# gemeinde
+gemeinde_df = pd.read_csv(path_directory + 'apps/assets/gemeinde_df.csv')
+# rename and drop columns
+gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0.1', 'Unnamed: 0', 'suitable_area']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'NAME_3': 'Gemeinde',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung'
+    })
+# Reorder the columns
+column_order = ['Gemeinde', 'Landkreis', 'Bundesland', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
+gemeinde_df = gemeinde_df.reindex(columns=column_order)
+
+# find unique values without NaN values and prep for dropdown
+Bundesland_options = [{'label': item, 'value': item} for item in np.sort(gemeinde_df['Bundesland'].unique()[pd.notna(gemeinde_df['Bundesland'].unique())])]
+Kreise_options = [{'label': item, 'value': item} for item in np.sort(gemeinde_df['Landkreis'].unique()[pd.notna(gemeinde_df['Landkreis'].unique())])]
+
 
 # heatmap
 def discrete_background_color_bins(df, n_bins=5, columns='all'):
@@ -70,92 +100,146 @@ def discrete_background_color_bins(df, n_bins=5, columns='all'):
     return (styles, html.Div(legend, style={'padding': '5px 0 5px 0'}))
 
 # run function
-(styles, legend) = discrete_background_color_bins(kreise_df, columns=['avg_Score'])
-
-# the style arguments for the sidebar. We use position:fixed and a fixed width
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": 0,
-    "left": 0,
-    "bottom": 0,
-    "width": "26rem",
-    "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
-}
-# the styles for the main content position it to the right of the sidebar and add some padding.
-CONTENT_STYLE = {
-    "margin-left": "28rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
+(styles_kreise, legend_kreise) = discrete_background_color_bins(kreise_df, columns=['Gesamtwertung'])
+(styles_gemeinde, legend_gemeinde) = discrete_background_color_bins(gemeinde_df, columns=['Gesamtwertung'])
 
 # --------------------
 # MAIN PAGE
 # --------------------
-table = html.Div([
-# define table
+layout = html.Div([
     dbc.Row([
-        dash_table.DataTable(
-            id='table',
-            # data
-            columns = [{"name": i, "id": i} for i in kreise_df.columns],
-            data=kreise_df.to_dict('records'),
-            # sorting
-            sort_action = 'native',
-            sort_mode = 'multi',
-            # pagination
-            page_current=0,
-            page_size=25,
-            page_action='native',
-            # style
-            style_data_conditional = styles,
-            style_cell_conditional=[{
-                'if': {'column_id': c},
-                'textAlign': 'left'
-                } for c in ['Bundesland', 'Landkreis', 'Land_Stadt']],
-            style_as_list_view=True,
-        )])
-], style = CONTENT_STYLE)
-
-@app.callback(
-    Output('table', 'data'),
-    [Input('Bundesland_choice', 'value')]
-)
-def update_table(Bundesland_choice):
-    if Bundesland_choice:
-        filtered_df = kreise_df[kreise_df['Bundesland'] == Bundesland_choice]
-    else:
-        filtered_df = kreise_df
-    return filtered_df.to_dict(orient='records')
-
-# --------------------
-# SIDEBAR
-# --------------------
-
-sidebar = html.Div([
-    dbc.Container([
-        dbc.Row([
             dbc.Col(html.H1(children='Alle Landkreise auf einen Blick'), className="mb-1")
         ]),
         dbc.Row([
             dbc.Col(html.H6(children='die wichtigsten Kennzahlen zur Filterung und zum Nachschlagen.'), className="mb-3")
         ]),
-# choose between Bundesland
-    dbc.Row([
-        dcc.Dropdown(
-        id='Bundesland_choice',
-        options=Bundesland_options,
-        value=None,
-        #multi=True,
-        style={'width': '30vh'}
+    # tabs for Kreis & Gemeinde
+    dmc.Tabs([
+        dmc.TabsList([
+            dmc.Tab("Gemeinden", value = "gemeinde"),
+            dmc.Tab("Landkreise", value = "kreise"),
+        ], grow=False),
+        dmc.TabsPanel(
+            dbc.Container([
+                # dropdown menu
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Dropdown(
+                            id='Bundesland_g_choice',
+                            options=Bundesland_options,
+                            value=None,
+                            placeholder="Bundesland",
+                            style={'width': '30vh'}),
+                    ], width=3),
+                    dbc.Col([
+                        dcc.Dropdown(
+                            id='Landkreis_choice',
+                            options=Kreise_options,
+                            value=None,
+                            placeholder="Landkreis",
+                            style={'width': '30vh'}),
+                    ], width=3),
+                ], className="mb-2 mt-4", justify="start",),
+                # table
+                dbc.Row([
+                    dash_table.DataTable(
+                        id='table_g',
+                        # data
+                        columns = [{"name": i, "id": i} for i in gemeinde_df.columns],
+                        data=gemeinde_df.to_dict('records'),
+                        # sorting
+                        sort_action = 'native',
+                        sort_mode = 'multi',
+                        # pagination
+                        page_current=0,
+                        page_size=25,
+                        page_action='native',
+                        # style
+                        style_data_conditional = styles_gemeinde,
+                        style_cell_conditional=[{
+                            'if': {'column_id': c},
+                            'textAlign': 'left'
+                        } for c in ['Bundesland', 'Landkreis', 'Gemeinde']],
+                        style_as_list_view=True,
+                    ), legend_gemeinde],
+                        #style={'margin-left': '10vh','margin-right': '10vh'}
+                        )
+            ]), value = "gemeinde"
         ),
-    ]),
-    dbc.Row([
-        html.Hr(),
-        html.H4("Legende für Heat Spalte"),
-        legend
-    ], class_name = 'mt-3')
-    ])
-], style = SIDEBAR_STYLE)
+        dmc.TabsPanel(
+            dbc.Container([
+                # dropdown menu
+                dbc.Row([
+                    dcc.Dropdown(
+                        id='Bundesland_k_choice',
+                        options=Bundesland_options,
+                        value=None,
+                        placeholder="Bundesland",
+                        style={'width': '30vh'}
+                    ),
+                ], className="mb-2 mt-4"),
+                # table
+                dbc.Row([
+                    dash_table.DataTable(
+                        id='table_k',
+                        # data
+                        columns = [{"name": i, "id": i} for i in kreise_df.columns],
+                        data=kreise_df.to_dict('records'),
+                        # sorting
+                        sort_action = 'native',
+                        sort_mode = 'multi',
+                        # pagination
+                        page_current=0,
+                        page_size=25,
+                        page_action='native',
+                        # style
+                        style_data_conditional = styles_kreise,
+                        style_cell_conditional=[{
+                            'if': {'column_id': c},
+                            'textAlign': 'left'
+                        } for c in ['Bundesland', 'Landkreis']],
+                        style_as_list_view=True,
+                    ), legend_kreise],
+                        #style={'margin-left': '10vh','margin-right': '10vh'}
+                        )
+            ]), value = "kreise"
+        ),
+    ],
+    color = "yellow",
+    orientation = "horizontal",
+    value = "gemeinde"),
+        
+], style={'margin-right': '2rem',
+          'margin-left': '2rem'})
 
-layout = html.Div([sidebar, table])
+# kreise callbacks
+@app.callback(
+    Output('table_k', 'data'),
+    [Input('Bundesland_k_choice', 'value')]
+)
+def update_table(Bundesland_k_choice):
+    if Bundesland_k_choice:
+        filtered_df = kreise_df[kreise_df['Bundesland'] == Bundesland_k_choice]
+    else:
+        filtered_df = kreise_df
+    return filtered_df.to_dict(orient='records')
+
+# gemeinde callbacks
+@app.callback(
+    Output('table_g', 'data'),
+    [Input('Bundesland_g_choice', 'value'),
+     Input('Landkreis_choice', 'value')]
+)
+
+def update_table(Bundesland_g_choice, Landkreis_choice):
+    if Bundesland_g_choice is None and Landkreis_choice is None:
+        return gemeinde_df.to_dict(orient='records')
+    if Bundesland_g_choice is not None and Landkreis_choice is not None:
+        filtered_df = gemeinde_df[(gemeinde_df['Bundesland'] ==Bundesland_g_choice) & (gemeinde_df['Landkreis'] == Landkreis_choice)]
+        return filtered_df.to_dict(orient='records')
+    if Bundesland_g_choice is not None:
+        filtered_df = gemeinde_df[gemeinde_df['Bundesland'] ==Bundesland_g_choice]
+        return filtered_df.to_dict(orient='records')
+    if Landkreis_choice is not None:
+        filtered_df = gemeinde_df[gemeinde_df['Landkreis'] == Landkreis_choice]
+        return filtered_df.to_dict(orient='records')

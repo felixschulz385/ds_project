@@ -54,53 +54,56 @@ class analysis_imagery(): #analysis_abstract
             pic_size (iterable): a tuple of size 2 (x,y) of the image size
 
         """
+        
+        lim_x = 800
+        lim_y = 800
     
         xmax = pic_size[0]
         ymax = pic_size[1]
         
         n = 0
-        out = [(None, None)] * ((xmax // 1000 + 1) * (ymax // 1000 + 1))
+        out = [(None, None)] * ((xmax // lim_x + 1) * (ymax // lim_y + 1))
 
-        for xsplit in range(xmax // 1000 + 1):
-            for ysplit in range(ymax // 1000 + 1):
+        for xsplit in range(xmax // lim_x + 1):
+            for ysplit in range(ymax // lim_y + 1):
                 
                 ## initialize ignoring limits
                 # splits
-                xsplit_lower = xsplit * 1000
-                xsplit_upper = (xsplit + 1) * 1000
-                ysplit_lower = ysplit * 1000
-                ysplit_upper = (ysplit + 1) * 1000
+                xsplit_lower = xsplit * lim_x
+                xsplit_upper = (xsplit + 1) * lim_x
+                ysplit_lower = ysplit * lim_y
+                ysplit_upper = (ysplit + 1) * lim_y
                 # writes
-                xwrite_lower = xsplit * 1000
-                xwrite_upper = (xsplit + 1) * 1000
-                ywrite_lower = ysplit * 1000
-                ywrite_upper = (ysplit + 1) * 1000
+                xwrite_lower = xsplit * lim_x
+                xwrite_upper = (xsplit + 1) * lim_x
+                ywrite_lower = ysplit * lim_y
+                ywrite_upper = (ysplit + 1) * lim_y
                 # reads
                 xread_lower = 0
-                xread_upper = 1000
+                xread_upper = lim_x
                 yread_lower = 0
-                yread_upper = 1000
+                yread_upper = lim_y
                 
                 ## if exceeding limit, set to limit
                 # splits
-                if xmax < (xsplit + 1) * 1000:
-                    xsplit_lower = xmax - 1000
+                if xmax < (xsplit + 1) * lim_x:
+                    xsplit_lower = xmax - lim_x
                     xsplit_upper = xmax
-                if ymax < (ysplit + 1) * 1000:
-                    ysplit_lower = ymax - 1000
+                if ymax < (ysplit + 1) * lim_y:
+                    ysplit_lower = ymax - lim_y
                     ysplit_upper = ymax
                 # writes
-                if xmax < (xsplit + 1) * 1000:
-                    xwrite_lower = xsplit * 1000
+                if xmax < (xsplit + 1) * lim_x:
+                    xwrite_lower = xsplit * lim_x
                     xwrite_upper = xmax
-                if ymax < (ysplit + 1) * 1000:
-                    ywrite_lower = ysplit * 1000
+                if ymax < (ysplit + 1) * lim_y:
+                    ywrite_lower = ysplit * lim_y
                     ywrite_upper = ymax
                 # reads
-                if xmax < (xsplit + 1) * 1000:
-                    xread_lower = xread_upper - (xmax - xsplit * 1000)
-                if ymax < (ysplit + 1) * 1000:
-                    yread_lower = yread_upper - (ymax - ysplit * 1000)
+                if xmax < (xsplit + 1) * lim_x:
+                    xread_lower = xread_upper - (xmax - xsplit * lim_x)
+                if ymax < (ysplit + 1) * lim_y:
+                    yread_lower = yread_upper - (ymax - ysplit * lim_y)
                     
                 ## write to out
                 out[n] = ([xsplit_lower, ysplit_lower, xsplit_upper, ysplit_upper], 
@@ -175,7 +178,7 @@ class analysis_imagery(): #analysis_abstract
                  storage_directory = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/imagery"):
         self.storage_directory = storage_directory                
     
-    def analyze(self, imagery, polygons, model, inset = 12, model_pixel_density = .1):
+    def analyze(self, imagery, polygons, model, inset = 12, model_pixel_density = .3):
         """
         
         A function calculating relative land cover for a set of images given polygons and a model for prediction
@@ -315,6 +318,8 @@ class analysis_imagery(): #analysis_abstract
                         
                         # write predictions to the data
                         pic_resized.classification[0, range(p_split[1][1], p_split[1][3]), range(p_split[1][0], p_split[1][2])] = xarray.DataArray(preds.transpose(1,0).cpu())[range(p_split[2][1], p_split[2][3]), range(p_split[2][0], p_split[2][2])]
+                        
+                        del cut_transformed
                 
                 # cut out relevant values and get stats   
                 #u, counts = np.unique(pic_resized.classification.sel(x=pic_resized.x.notnull(), y = pic_resized.y.notnull()).rio.clip([x.geometry.buffer(-inset)]).values, return_counts = True)
@@ -379,11 +384,11 @@ class analysis_imagery(): #analysis_abstract
                 # export table with mapping from link_id to land cover
                 driveways_out.to_csv(self.storage_directory + "/analysis/" + state_name + ".csv", index = False)      
 
-"""
+#"""
 # --- For testing outside the workflow ---   
 if __name__ == "__main__":
     c_analysis_imagery = analysis_imagery()
     c_analysis_imagery.analyze("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/imagery/raw/BB_ML_0001_2017-08-29.nc", 
                          "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_polygons.geojson",
                          "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/trained_models/love_checkpoint_DLV3_6classes.pth.tar")
-"""
+#"""

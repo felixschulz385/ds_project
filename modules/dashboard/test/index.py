@@ -2,13 +2,14 @@
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
 # import all pages in the app
 from app import app, path_directory
 from apps import karte, rohdaten, home
 
 #hardcoded paths
-# logo from https://www.vectorstock.com/royalty-free-vector/road-sun-shine-logo-vector-17131606
 import base64
 with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
     logo = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
@@ -17,11 +18,15 @@ with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
 navbar = dbc.NavbarSimple(
     children = [
         dbc.NavItem(dbc.NavLink("Karte", href="/karte")),
-        dbc.NavItem(dbc.NavLink("Tabelle", href="/rohdaten"))
+        dbc.NavItem(dbc.NavLink("Tabelle", href="/rohdaten")),
+        dbc.NavItem([dmc.Anchor(dmc.ThemeIcon(
+                        DashIconify(icon="bi:github", width=40), variant= "filled", color="grey"),
+                            href="https://github.com/felixschulz385/ds_project",
+                            target="_blank")])
     ],
     brand=dbc.Row([
             dbc.Col(html.Img(src=logo, height="30px")),
-            dbc.Col(dbc.NavbarBrand("Road to Renewables", className="ml-1")),
+            dbc.Col(dbc.NavbarBrand("SolarExit", className="ml-1")),
                     ]),
     brand_href="/home",
     color="primary",

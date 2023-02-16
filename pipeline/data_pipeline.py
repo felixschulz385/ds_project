@@ -183,4 +183,4 @@ def main(bundeslander = ["brandenburg"], base_path = "/pfs/work7/workspace/scrat
             f_analysis_combine(bundesland, base_path)
 
 if __name__ == "__main__":
-    main(analysis_combine=True)
+    main(analysis_imagery=True)

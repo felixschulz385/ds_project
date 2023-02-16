@@ -86,7 +86,8 @@ class analysis_combine(analysis_abstract): #
         # get the overall score
         driveways["overall_score"] = (economic_model["irradiation"] * driveways["irradiation_score"] + 
                             economic_model["distance"] * driveways["distance_score"] +
-                            economic_model["terrain"] * driveways["terrain_score"])
+                            economic_model["terrain"] * driveways["terrain_score"] +
+                            economic_model["land_cover"] * driveways["land_cover_score"])
         driveways["overall_rank"] = driveways.overall_score.rank(method = "min", ascending = False)
         
         # add municipality information
@@ -145,8 +146,10 @@ class analysis_combine(analysis_abstract): #
                                                 'irradiation_score': wm, 
                                                 'distance_score': wm,
                                                 'overall_score': wm}).reset_index()
-        # export
-        pd.merge(municipalities[["NAME_3", "geometry"]], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').\
+        # filter for brandenburg
+        state_name_long = kreis.NAME_1.unique()[0]
+        # filter for brandenburg and export
+        pd.merge(municipalities[["NAME_3", "geometry"]][municipalities['NAME_1'] == state_name_long], gemeinde_stats, left_on = 'NAME_3', right_on = 'NAME_3', how = 'left').\
             to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_gemeinde_final.json", driver = 'GeoJSON')
         
         # copy the axiliary distance information
