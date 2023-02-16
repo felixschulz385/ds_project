@@ -42,11 +42,9 @@ gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0.1', 'Unnamed: 0', 'suitable_
 column_order = ['Gemeinde', 'Landkreis', 'Bundesland', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
 gemeinde_df = gemeinde_df.reindex(columns=column_order)
 
-# good if there are many options
-Bundesland_unique = kreise_df['Bundesland'].unique()
-Bundesland_options = [{'label': item, 'value': item} for item in np.sort(kreise_df['Bundesland'].unique())]
-Kreise_unique = kreise_df['Landkreis'].unique()
-Kreise_options = [{'label': item, 'value': item} for item in np.sort(kreise_df['Landkreis'].unique())]
+# find unique values without NaN values and prep for dropdown
+Bundesland_options = [{'label': item, 'value': item} for item in np.sort(gemeinde_df['Bundesland'].unique()[pd.notna(gemeinde_df['Bundesland'].unique())])]
+Kreise_options = [{'label': item, 'value': item} for item in np.sort(gemeinde_df['Landkreis'].unique()[pd.notna(gemeinde_df['Landkreis'].unique())])]
 
 
 # heatmap
@@ -132,7 +130,7 @@ layout = html.Div([
                             value=None,
                             placeholder="Bundesland",
                             style={'width': '30vh'}),
-                    ]),
+                    ], width=3),
                     dbc.Col([
                         dcc.Dropdown(
                             id='Landkreis_choice',
@@ -140,8 +138,8 @@ layout = html.Div([
                             value=None,
                             placeholder="Landkreis",
                             style={'width': '30vh'}),
-                    ]),
-                ], className="mb-2 mt-4"),
+                    ], width=3),
+                ], className="mb-2 mt-4", justify="start",),
                 # table
                 dbc.Row([
                     dash_table.DataTable(
@@ -215,7 +213,6 @@ layout = html.Div([
           'margin-left': '2rem'})
 
 # kreise callbacks
-
 @app.callback(
     Output('table_k', 'data'),
     [Input('Bundesland_k_choice', 'value')]
@@ -228,7 +225,6 @@ def update_table(Bundesland_k_choice):
     return filtered_df.to_dict(orient='records')
 
 # gemeinde callbacks
-
 @app.callback(
     Output('table_g', 'data'),
     [Input('Bundesland_g_choice', 'value'),

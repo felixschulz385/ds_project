@@ -2,6 +2,8 @@
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
 # import all pages in the app
 from app import app, path_directory
@@ -16,7 +18,11 @@ with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
 navbar = dbc.NavbarSimple(
     children = [
         dbc.NavItem(dbc.NavLink("Karte", href="/karte")),
-        dbc.NavItem(dbc.NavLink("Tabelle", href="/rohdaten"))
+        dbc.NavItem(dbc.NavLink("Tabelle", href="/rohdaten")),
+        dbc.NavItem([dmc.Anchor(dmc.ThemeIcon(
+                        DashIconify(icon="bi:github", width=40), variant= "filled", color="grey"),
+                            href="https://github.com/felixschulz385/ds_project",
+                            target="_blank")])
     ],
     brand=dbc.Row([
             dbc.Col(html.Img(src=logo, height="30px")),
