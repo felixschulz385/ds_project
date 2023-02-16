@@ -216,17 +216,30 @@ The data should be validated, for example
 
 - Survey encompasses **206** turnoffs, **1253** polygons, **>6,5** km² of potential area
 
+
+
+## Land cover classification
+
+* Problem: precisely predict the areal distribution of relevant features
+  + high vegetation, low vegetation, buildings, etc.
+
+* Task: Image segmentation
+  * Divide image into regions belonging to different semantic classes.
+    + Task of pixel-based classification
+    + Pixel-wise mask for each object in the image
+  * Output (class per pixel) is the same size as the input (pixel)
+
+![](fig/segmentation.png){height="500"}
+
+Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, DeepLab V3+). \url{https://wooono.tistory.com/267}
+
 <!---
-The primary focus of the project is a relevant substantive question, which can, but does not necessarily have to be of an economic nature.
-- relation between to variables (correlational or causal)
-- prediction of economic conditions (predictive analytics)
-- corresponding analysis should be implemented with adequate methods (traditional statistics or machine learning).
+The structure and distribution of the data as well as the relations and results of the data analysis.
 -->
 
 ## Training data - Postdam 
 
-
-First choice training dataset: Semantic Labeling Benchmark data for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)
+Potsdam 2D Semantic Segmentation dataset for the German city Potsdam, provided by the International Society for Photogrammetry and Remote Sensing (ISPRS)
 
 ![](fig/potsdam_labels.png){height="500"}
 
@@ -243,20 +256,23 @@ Data Source: 2D Semantic Labeling Contest - Potsdam. Available online: https://w
 
 ## Training data - Postdam 
 
-#### Advantages
-* Aerial images, not just satellite
+Advantages:
+
+* Aerial images, not satellite images
   + High resolution (6,000 px × 6,000 px with 5 cm ground res.)
 * Precise and reliable labeling
   + Best dataset for German pixel-based labels
-  + Useful classes, apart from cars
+  + Classes are useful for our segmentation problem
+
+Disadvantages:
 
 #### Disadvantages
 * Urban structures, whereas in ears more rural structures
   + Rural structures are characterised by greater contiguous areas, like forests
   + Narrow, detailed urban structure in training creates fuzzy predictions for ears
-  + Giving greater weight to classes "tree" and "low vegetation"
-    - Improves detection of organic structures
-    - Good in detecting single trees, but not forests
+* Giving greater weight to classes "tree" and "low vegetation"
+  + Improves detection of organic structures
+  + Good in detecting single trees, but not forests
     
 ## Training data - Postdam 
 
@@ -264,10 +280,9 @@ Data Source: 2D Semantic Labeling Contest - Potsdam. Available online: https://w
 ![](fig/potsdam_pred2.jpeg){height="250"}
 Color Labels: White - Impervious surfaces; Light-blue - Low vegetation; Green - Tree
 
-## Training data - China (regions of Nanjing, Changzhou and Wuhan)
+## Training data - LoveDA (Nanjing, Changzhou and Wuhan / China)
 
-Second choice training dataset: Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
-
+Land-cOVEr Domain Adaptive semantic segmentation (LoveDA) dataset
 + High spatial resolution land-cover mapping (spatial resolution of 30 cm)
 + Source Google Earth platform
 
@@ -283,6 +298,7 @@ Second choice training dataset: Land-cOVEr Domain Adaptive semantic segmentation
 | 6.) Forest | red |
 | 7.) Agriculture | red |
 | 0.) Unknown | red |
+
 
 ## Training data - China (regions of Nanjing, Changzhou and Wuhan)
 
@@ -300,15 +316,6 @@ Second choice training dataset: Land-cOVEr Domain Adaptive semantic segmentation
 * Satellite images (vs. aerial images from Brandenburg)
 * [Less detailed labeling compared to Potsdam dataset]
   + Useful in training for the recognition of larger contiguous areas, but not individual trees
-
-## Land cover classification
-
-Goal: Detect features in aerial images
-* Classes of interest
-  + Agriculture
-  + Buildings
-  + Forest and Trees
-  + Other
   
 <!--- Add picture of example ear here to stress out classes. -->
   
@@ -382,6 +389,32 @@ Figure credit: Choi, U. (2021, March 19) Semantic Segmentation (FCN, U-Net, Deep
 |      | - superior predictions after few training iterations |
 |      | - least overfitting |
 |      | - complexity of model seems to fit task|
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Recognition of small forest areas very good.
+* Individual trees are partly not recognized.
+* Shadow areas are not always clearly assigned.
+
+![](fig/resnet101_pred3.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Agricultural areas are better recognized when they are planted.
+* Similar results for single trees that are leafy or bare.
+
+![](fig/resnet101_pred2.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Yellow - Agricultur
+
+## Semantic Segmentation - ResNet101 + COCO - Results
+
+* Road recognition is so good that you could use it to identify the shape of an ear.
+* Even small buildings in shaded areas are detected.
+* The model is trained to recognise organic structures very well (characteristic for landscape in ears), however, human-made structures (fields, buildings) are therefore less regular.
+
+![](fig/resnet101_pred1.jpeg){height="500"}
+Color Labels: White - Impervious surfaces; Red - Road; Green - Trees; Pink - Building
 
 ## Presentation of the result - Dashboard (Jan)
 

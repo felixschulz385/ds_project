@@ -14,70 +14,76 @@ from app import path_directory
 # import data
 kreise_df = pd.read_csv(path_directory + 'apps/assets/kreise_df.csv')
 # rename and drop columns
-kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={'NAME_1': 'Bundesland', 'NAME_2': 'Region', 'NAME_3': 'Landkreis', 'ENGTYPE_3': 'Land_Stadt'})
+kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung'
+    })
 
+gemeinde_df = pd.read_csv(path_directory + 'apps/assets/gemeinde_df.csv')
+# rename and drop columns
+gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0']).rename(columns={
+    'NAME_1': 'Bundesland',
+    'NAME_2': 'Landkreis',
+    'NAME_3': 'Gemeinde',
+    'terrain_score': 'Geländebeschaffenheit',
+    'irridation_score': 'Sonnenpotential',
+    'distance_score': 'Netzanschluss',
+    'overall_score': 'Gesamtwertung',
+    'suitable_area': 'Landbedeckung'
+    })
 
 # create sunburst plot
-Ohren_sunburst = px.sunburst(kreise_df, path=['Bundesland', 'Region', 'Landkreis'], values='avg_Score')
+Ohren_sunburst = px.sunburst(kreise_df, path=['Bundesland', 'Landkreis'], values='Gesamtwertung')
 Ohren_sunburst = Ohren_sunburst.update_traces(
     insidetextorientation='radial',
-    hovertemplate = '<b>%{label}</b> <br>Score: %{value}')
+    hovertemplate = '<b>%{label}</b> <br>Wertung: %{value}')
 
+import base64
+with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
+    logo = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
 
-# the style arguments for the sidebar. We use position:fixed and a fixed width
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": 62.5,
-    "left": 0,
-    "bottom": 0,
-    "width": "26rem",
-    "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
-}
-FOOTER_STYLE = {
-    "position": "fixed",
-    "top": 720,
-    "left": 0,
-    "bottom": 0,
-    "width": "26rem",
-    "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
-}
-# the styles for the main content position it to the right of the sidebar and add some padding.
-CONTENT_STYLE = {
-    "margin-left": "28rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
 
 # --------------------
-# SIDEBAR
+# FOOTER
 # --------------------
 
-sidebar = html.Div([
+footer = html.Div([dbc.Container([
+    # Links und Erklärungen
     dbc.Row([
-      html.H3('Road to Renewables'),
-      html.H5('Erneuerbare Energie Potenziale an Deutschlands Schnellstraßen'),
-      html.Hr()
-    ]),
-    dbc.Row([
-        html.H5("Autoren"),
-        dmc.List(icon=DashIconify(icon="openmoji:man-student", width=25),
-            size="md",
-            spacing="sm",
-            children=[
-                dmc.ListItem((dmc.HoverCard(
+      dbc.Col([
+        # logo and name
+        dmc.Image(width=35, height=35, src=logo),
+        dmc.Text("Solarexit",
+                 style={"fontSize": 20},)
+        ]),
+        # columns with authors
+      dbc.Col([
+        #dmc.Text("Autoren"),
+        # Yvette
+        #DashIconify(icon="openmoji:woman-student", width=20),
+        (dmc.HoverCard(
         shadow="md",children=[
             dmc.HoverCardTarget("Yvette Bodry"),
             dmc.HoverCardDropdown([
                 dmc.Group([
                     dmc.Anchor(
+                        DashIconify(icon="bi:file-person", width=40),
+                                    href="https://auwi.uni-hohenheim.de/en/team",
+                                    target="_blank"),
+                    dmc.Anchor(
                         DashIconify(icon="bi:github", width=40),
                                     href="https://github.com/vivresursonnuage/",
                                     target="_blank")],
                         p=0,
-                    )])], position = "right")), DashIconify(icon="openmoji:woman-student", width=25)),
-                dmc.ListItem(
+                    )])], position = "top")),
+      ]),
+      dbc.Col([
+        # Felix
+        #DashIconify(icon="openmoji:man-student", width=20),
        (dmc.HoverCard(
         shadow="md",children=[
             dmc.HoverCardTarget("Felix Schulz"),
@@ -92,9 +98,11 @@ sidebar = html.Div([
                                     href="https://github.com/felixschulz385/",
                                     target="_blank")],
                         p=0,
-                    )])], position = "right"))
-                    ),
-                dmc.ListItem(
+                    )])], position = "top"))    
+      ]),
+      dbc.Col([
+        # Marvin
+        #DashIconify(icon="openmoji:man-student", width=20),
        (dmc.HoverCard(
         shadow="md",children=[
             dmc.HoverCardTarget("Marvin Hoberg"),
@@ -109,9 +117,11 @@ sidebar = html.Div([
                                     href="https://github.com/marvin-hoberg/",
                                     target="_blank")],
                         p=0,
-                    )])], position = "right"))
-                    ),
-                dmc.ListItem(
+                    )])], position = "top"))
+      ]),
+      dbc.Col([
+          # Jan
+        #DashIconify(icon="openmoji:man-student", width=20),
         (dmc.HoverCard(
         shadow="md",children=[
             dmc.HoverCardTarget("Jan Besler"),
@@ -126,37 +136,28 @@ sidebar = html.Div([
                                     href="https://github.com/janbesler/",
                                     target="_blank")],
                         p=0,
-                    )])], position = "right")),
-                    ),
-]),
-    ]),
-], style=SIDEBAR_STYLE)
-
-# --------------------
-# SIDEBAR FOOTER
-# --------------------
-
-footer = html.Div([
-        # Links und Erklärungen
-    dbc.Row([
+                    )])], position = "top"))
+      ]),  
+      # column with disclaimer and uni link
       dbc.Col([
-        dmc.Center([
         dmc.Anchor(
-            DashIconify(icon="bi:github", width=40),
+            DashIconify(icon="bi:github", width=25),
                         href="https://github.com/felixschulz385/ds_project",
                         target="_blank",
-        )])]),
-      dbc.Col([
-        dmc.Center([
+        ),
         dmc.Anchor(
-            DashIconify(icon="bi:newspaper", width=40),
+            DashIconify(icon="bi:newspaper", width=25),
                         href="https://www.badische-zeitung.de/ob-palmer-will-solaranlagen-auf-freien-stellen-neben-bundesstrassen--211487616.html",
                         target="_blank",
-        )])]),
-      html.P('This project is being developed as part of the \
-              Data Science in Business and Economics Master degree course at the University of Tübingen.')
-    ], className="fixed-row-bottoms", align="end")
-], style=FOOTER_STYLE)
+        )]),
+      dbc.Col([
+          dmc.Text(["Dieses Projekt wird im Rahmen des Studiengangs Masterstudiengangs ",
+                   dmc.Anchor('Data Science in Business and Economics', href="https://uni-tuebingen.de/fakultaeten/wirtschafts-und-sozialwissenschaftliche-fakultaet/faecher/fachbereich-wirtschaftswissenschaft/wirtschaftswissenschaft/studium/studiengaenge/master/msc-data-science-in-business-and-economics/", underline=False),
+                   " an der Universität Tübingen entwickelt."
+                   ], style={"fontSize":10})
+        ]),
+    ])], className="fixed-bottom", style={"background-color": "#f8f9fa","padding": "2rem 1rem","width":"100%"})
+])
 
 
 # --------------------
@@ -177,6 +178,11 @@ with open(path_directory + "apps/assets/Lustnauer_Ohren_danach.jpg", "rb") as fi
     
 # change to app.layout if running as single page app instead
 content = html.Div([
+    dbc.Row([
+      html.H3('SolarExit', style={'text-align': 'center'}),
+      html.H5('Erneuerbare Energie Potenziale an Deutschlands Schnellstraßen', style={'text-align': 'center'}),
+      html.Hr()
+    ]),    
     dmc.Tabs([
         dmc.TabsList([
             dmc.Tab("Einleitung & Motivation", value = "einleitung"),
@@ -496,6 +502,6 @@ content = html.Div([
     value = "einleitung"
     )
 
-], style=CONTENT_STYLE)
+], style={"padding": "2rem 1rem"})
 
-layout = html.Div([sidebar, footer, content])
+layout = html.Div([footer, content])
