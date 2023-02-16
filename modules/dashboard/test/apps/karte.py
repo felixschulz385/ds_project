@@ -4,19 +4,22 @@ from dash import Dash, html, Output, Input, dcc
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
-from dash_extensions.enrich import html, DashProxy
-from dash_extensions.javascript import arrow_function, assign
+from dash_extensions.enrich import html
+from dash_extensions.javascript import arrow_function
 import plotly.express as px
 
 import base64
 
-from app import app
+#from app import app
+external_stylesheets = [dbc.themes.BOOTSTRAP]
+
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 # hardcoded paths
-BB_polygons_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_polygons_final.json"
-BB_gemeinde_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_gemeinde_final.json"
-BB_kreise_final = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_kreis_final.json"
-BB_ps_auxiliary = "/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/BB_ps_auxiliary.csv"
+BB_polygons_final = "ds_project/modules/dashboard/test/apps/assets/BB_polygons_final.json"
+BB_gemeinde_final = "ds_project/modules/dashboard/test/apps/assets/BB_gemeinde_final.json"
+BB_kreise_final = "ds_project/modules/dashboard/test/apps/assets/BB_kreis_final.json"
+BB_ps_auxiliary = "ds_project/modules/dashboard/test/apps/assets/BB_ps_auxiliary.csv"
 
 ###
 # Driveways
@@ -210,7 +213,7 @@ tile_layer = dl.TileLayer(url="http://localhost:8080/styles/positron/{z}/{x}/{y}
 
 # core
 # layout
-layout = html.Div([
+app.layout = html.Div([
     dbc.Row([
         dbc.Col([dl.Map(children = [tile_layer, 
                                     dl.Pane([kreis_geojson], id = "regional-polygon", style = {"zIndex": 200}), 
@@ -221,7 +224,6 @@ layout = html.Div([
                         id = "map", center = [52.47288, 13.39777], zoom = 7)],
                 width = {"size": 12, "offset": 0})
         ]),
-    html.Div(id = "test"),
     html.Div(id = "info-panel")
     
 ])
@@ -448,3 +450,6 @@ def info_click(n):
         return [dl.Marker(position=(tmp["lat_substation"][i], tmp["lon_substation"][i])) for i in tmp.index], "Nächstgelegene 3 Netzanschlusspunkte ausblenden"
     else:
         return [], "Nächstgelegene 3 Netzanschlusspunkte anzeigen"
+    
+if __name__ == '__main__':
+    app.run_server(debug=True)

@@ -212,88 +212,9 @@ app.layout = html.Div([
                         id = "map", center = [52.47288, 13.39777], zoom = 7)],
                 width = {"size": 12, "offset": 0})
         ]),
-    html.Div([
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Fläche", className="card-title"),
-                        html.Div(id = "card-content-overall"),
-                        ]),
-                    dbc.CardFooter([
-                            html.Div([
-                                html.Img(src = svg_handler("overall", 0),
-                                    id = "sym-overall", style = {"cursor": "pointer"}),
-                                dbc.Tooltip("Gesamtwertung", target = "sym-overall"),
-                                #
-                                html.Img(src = svg_handler("land cover", 0),
-                                    id = "sym-land", style = {"cursor": "pointer"}),
-                                dbc.Tooltip(["Wertung der", html.Br(), "Landbedeckung"], target = "sym-land"),
-                                #
-                                html.Img(src = svg_handler("terrain", 0),
-                                    id = "sym-terrain", style = {"cursor": "pointer"}),
-                                dbc.Tooltip(["Wertung der", html.Br(), "Geländebeschaffenheit"], target = "sym-terrain"),
-                                #
-                                html.Img(src = svg_handler("grid", 0),
-                                    id = "sym-distance", style = {"cursor": "pointer"}),
-                                dbc.Tooltip(["Wertung des", html.Br(), "Netzanschlusses"], target = "sym-distance"),
-                                #
-                                html.Img(src = svg_handler("irradiation", 0),
-                                    id = "sym-irradiation", style = {"cursor": "pointer"}),
-                                dbc.Tooltip(["Wertung des", html.Br(), "Sonnenpotentials"], target = "sym-irradiation")
-                            ], id = "card-footer-overall")
-                        ], class_name = "text-center")
-                ], class_name="mt-1 h-100")
-                ], id = "col-overall", md = {"size": 12}, xs = {"size": 12}),
-            ], class_name="m-1"),
-        
-        dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                    dbc.CardBody([
-                        html.H4("Landbedeckung", className="card-title"),
-                        html.Div([], id = "card-content-land-cover")
-                    ]),
-                ], class_name="mt-1 h-100")
-                ], id = "col-land-cover", md = {"size": 12}, xs = {"size": 12})
-            ], class_name="m-1"),
-        
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                        dbc.CardBody([
-                            html.H4("Geländebeschaffenheit",
-                                    className="card-title"),
-                            html.Div([], id = "card-content-terrain")
-                        ]),
-                    ], class_name="mt-1 h-100")
-                    ], id = "col-terrain", md = {"size": 12}, xs = {"size": 12})
-            ], class_name="m-1"),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                        dbc.CardBody([
-                            html.H4("Netzanschluss", className="card-title"),
-                            html.Div([], id = "card-content-grid")
-                        ]),
-                    ], class_name="mt-1 h-100")
-                ], id = "col-grid", md = {"size": 6}, xs = {"size": 12}),
-            dbc.Col([
-                dbc.Card([
-                        dbc.CardBody([
-                            html.H4("Sonnenpotential", className="card-title"),
-                            html.Div([], id = "card-content-irradiation")
-                        ]),
-                    ], class_name="mt-1 h-60"),
-                dbc.Card([
-                        dbc.CardBody([
-                            html.H4("Quellen", className="card-title"), 
-                            html.Div([], id = "card-content-sources", style = {"font-size": "0.8rem"})
-                        ]),
-                    ], class_name="mt-1 h-40")
-                ], id = "col-irradiation-sources", md = {"size": 6}, xs = {"size": 12})
-            ], class_name="m-1")
-        ], id = "info-panel")             
+    html.Div(id = "test"),
+    html.Div(id = "info-panel")
+    
 ])
 
 ###
@@ -327,13 +248,7 @@ def info_hover(feature):
 
 
 # a callback that updates the info panel
-@app.callback([Output("card-content-overall", "children"),
-               Output("card-footer-overall", "children"),
-               Output("card-content-land-cover", "children"),
-               Output("card-content-terrain", "children"),
-               Output("card-content-grid", "children"),
-               Output("card-content-irradiation", "children"),
-               Output("card-content-sources", "children")], Input("polygon_geojson", "click_feature"))
+@app.callback(Output("info-panel", "children"), Input("polygon_geojson", "click_feature"))
 def info_click(feature):
     if feature is not None:
         # try and get core data
@@ -344,7 +259,13 @@ def info_click(feature):
         suitable_area = "{:.2f}".format(feature["properties"]["suitable_area"])
         overall_score = "{:.2f}".format(feature["properties"]["overall_score"])
         overall_rank = "{:.0f}".format(feature["properties"]["overall_rank"])
-        
+        # make pie chart
+        df = px.data.tips()
+        fig = px.pie(df, values='tip', names='day')
+        fig.layout.update()
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide',
+                          margin = dict(l=0, r=0, t=0, b=0), showlegend = False)
         # get image of terrain
         try:
             with open("ds_project/modules/dashboard/assets/imagery/height_profile/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
@@ -352,35 +273,6 @@ def info_click(feature):
                     base64.b64encode(image_file.read()).decode('ascii'))
         except:
             terrain_image = None
-            
-        # get orthoimage
-        try:
-            with open("ds_project/modules/dashboard/assets/imagery/rgb/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
-                rgb_image = "data:image/png;base64,{}".format(
-                    base64.b64encode(image_file.read()).decode('ascii'))
-        except:
-            rgb_image = None
-            
-        # get land cover data
-        land_cover_share_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"])
-        land_cover_m2_good = feature["properties"]["land_cover_share_good"] * suitable_area
-        land_cover_share_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"])
-        land_cover_m2_restricted = feature["properties"]["land_cover_share_restricted"] * suitable_area
-        land_cover_share_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"])
-        land_cover_m2_prohibted = feature["properties"]["land_cover_share_prohibted"] * suitable_area
-        land_cover_score = "{:.2f}".format(feature["properties"]["terrain_score"])
-        land_cover_rank = "{:.0f}".format(feature["properties"]["terrain_rank"])
-        # make pie chart
-        fig = px.pie(pd.DataFrame().from_records([{"item": "background", "value": feature["properties"]["lc_background"],
-                                   "item": "building", "value": feature["properties"]["lc_building"],
-                                   "item": "forest", "value": feature["properties"]["lc_forest"],
-                                   "item": "agriculture", "value": feature["properties"]["lc_agriculture"],
-                                   "item": "road", "value": feature["properties"]["lc_road"]}]), values='value', names='item')
-        fig.layout.update()
-        fig.update_traces(textposition='inside')
-        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide',
-                          margin = dict(l=0, r=0, t=0, b=0), showlegend = False)
-        
         # terrain data
         terrain_roughness = "{:.2f}".format(
             feature["properties"]["terrain_roughness"])
@@ -401,35 +293,29 @@ def info_click(feature):
             feature["properties"]["irradiation_score"])
         irradiation_rank = "{:.0f}".format(feature["properties"]["irradiation_rank"])
         #
-        card_content_overall = [
-            dbc.Row([
-                dbc.Col([
-                    html.B(link_name), html.Br(),
-                            html.Span("Potentialfläche in m²: ", style={
-                                    "color": "grey"}), suitable_area, html.Br(),
-                            html.Span([
-                                html.Span("Gesamtwertung: ", style={"color": "grey"}), overall_score, " ⓘ"],
-                                id = "item-overall-score", style={"cursor": "pointer"},
-                            ), html.Br(),
-                            dbc.Tooltip(["Die Gesamtwertung errechnet sich als ein gewichtetes Mittel der anderen Wertungen. ", html.Br(),
-                                        "Dabei fließt die Landbedeckung zu 50%, die Geländebeschaffenheit zu 10%, ",
-                                        "der Netzanschluss zu 30% und das Sonnenpotential zu 10% ein."], 
-                                        delay = {"show": 20, "hide": 50}, target = "item-overall-score", placement = "right"),
-                            html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks["overall_rank"]
-                ], width = {"size": 6}),
-                dbc.Col([
-                    html.Img(src=rgb_image, width="200px"), html.Br(),
-                                         html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})
-                            ], width = {"size": 6})
-                ])
-            ]
-                 
-        card_footer_overall = [
+        return [dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4("Fläche", className="card-title"),
+                        html.B(link_name), html.Br(),
+                        html.Span("Potentialfläche in m²: ", style={
+                                  "color": "grey"}), suitable_area, html.Br(),
+                        html.Span([
+                            html.Span("Gesamtwertung: ", style={"color": "grey"}), overall_score, " ⓘ"],
+                            id = "item-overall-score", style={"cursor": "pointer"},
+                        ), html.Br(),
+                        dbc.Tooltip(["Die Gesamtwertung errechnet sich als ein gewichtetes Mittel der anderen Wertungen. ", html.Br(),
+                                    "Dabei fließt die Landbedeckung zu 50%, die Geländebeschaffenheit zu 10%, ",
+                                    "der Netzanschluss zu 30% und das Sonnenpotential zu 10% ein."], 
+                                    delay = {"show": 20, "hide": 50}, target = "item-overall-score", placement = "right"),
+                        html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks["overall_rank"]]),
+                        dbc.CardFooter([
                             html.Img(src = svg_handler("overall", feature["properties"]["overall_score"]),
                                 id = "sym-overall", style = {"cursor": "pointer"}),
                             dbc.Tooltip("Gesamtwertung", target = "sym-overall"),
                             #
-                            html.Img(src = svg_handler("land cover", feature["properties"]["land_cover_score"]),
+                            html.Img(src = svg_handler("land cover", 1),
                                 id = "sym-land", style = {"cursor": "pointer"}),
                             dbc.Tooltip(["Wertung der", html.Br(), "Landbedeckung"], target = "sym-land"),
                             #
@@ -444,21 +330,36 @@ def info_click(feature):
                             html.Img(src = svg_handler("irradiation", feature["properties"]["irradiation_score"]),
                                 id = "sym-irradiation", style = {"cursor": "pointer"}),
                             dbc.Tooltip(["Wertung des", html.Br(), "Sonnenpotentials"], target = "sym-irradiation")
-                        ]
-        #
-        card_content_land_cover = [
-            dbc.Row([
-                            dbc.Col([html.Span("Vollständig nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_good, html.Br(),
-                                     html.Span("Eingeschränkt nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_restricted, html.Br(),
+                        ], class_name = "text-center") #style = {"margin-left": "auto", "margin-right": "auto", "display": "block"}
+                ], class_name="mt-1 h-100")
+            ], md = {"size": 4}, xs = {"size": 12}),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4("Landbedeckung", className="card-title"),
+                        dbc.Row([
+                            dbc.Col([html.Img(src=terrain_image, width="100px", height="100px"), html.Br(),
+                                         html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})
+                                     ], width={
+                                    "size": 4}),
+                            dbc.Col([html.Span("Nutzbare Fläche in m2: ", style={"color": "grey"}), "--", html.Br(),
                                      html.Span("Wertung: ", style={
-                                               "color": "grey"}), land_cover_score, html.Br(),
-                                     html.Span("Rang: ", style={"color": "grey"}), land_cover_rank], width={"size": 4}),
-                            dbc.Col([dcc.Graph(id = "graph", figure = fig, style={
-                                    'width': '200px', 'height': '200px'})], width={"size": 4})
-                        ])]
-        #
-        card_content_terrain = dbc.Row([
-                                dbc.Col([html.Img(src = terrain_image, width = 300), html.Br(),
+                                               "color": "grey"}), "--", html.Br(),
+                                     html.Span("Rang: ", style={"color": "grey"}), "--"], width={"size": 4}),
+                            dbc.Col([dcc.Graph(id="graph", figure=fig, style={
+                                    'width': '150px', 'height': '150px'})], width={"size": 4})
+                        ])
+                    ]),
+                ], class_name="mt-1 h-100")
+            ], md = {"size": 8}, xs = {"size": 12})], class_name="m-1"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H4("Geländebeschaffenheit",
+                                    className="card-title"),
+                            dbc.Row([
+                                dbc.Col([html.Img(src = terrain_image, width="150px", height="150px"), html.Br(),
                                          html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
                                         "size": 6}, class_name = "h-100 justify-content-center align-items-center"),
                                 dbc.Col([html.Span("Mittlere Abweichung der Steigung in Grad: ", style={"color": "grey"}), terrain_roughness, html.Br(),
@@ -472,9 +373,14 @@ def info_click(feature):
                                                      delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
                                          html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks["terrain_rank"]], width={"size": 6})
                             ])
-        #
-        card_content_grid = [
-            html.Span("Nächster Netzanschlusspunkt: ", style={
+                        ]),
+                    ], class_name="mt-1 h-100")
+                ], md = {"size": 4}, xs = {"size": 12}),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H4("Netzanschluss", className="card-title"),
+                            html.Span("Nächster Netzanschlusspunkt: ", style={
                                       "color": "grey"}), html.Br(),
                             "  ", distance, html.Br(),
                             html.Span([html.Span("Wertung: ", style={"color": "grey"}), distance_score, " ⓘ"],
@@ -484,10 +390,14 @@ def info_click(feature):
                                          delay = {"show": 20, "hide": 50}, target = "item-grid-score"),
                             html.Span("Rang: ", style={"color": "grey"}), distance_rank, "/", max_ranks["distance_rank"], html.Br(),
                             dbc.Button("Nächstgelegene 3 Netzanschlusspunkte anzeigen", id="show-grid-access", color="primary", class_name="mr-1 float-end", style={"margin-top": "10px"})
-                            ]
-        #
-        card_content_irradiation = [
-            html.Span("Durchschnittliche Wh/m² pro Monat: ",
+                        ]),
+                    ], class_name="mt-1 h-100")
+                ], md = {"size": 4}, xs = {"size": 12}),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H4("Sonnenpotential", className="card-title"),
+                            html.Span("Durchschnittliche Wh/m² pro Monat: ",
                                       style={"color": "grey"}), irradiation, html.Br(),
                             html.Span([html.Span("Wertung: ", style={"color": "grey"}), irradiation_score, " ⓘ"],
                                             id = "item-irradiation-score", style={"cursor": "pointer"}), html.Br(),
@@ -495,18 +405,26 @@ def info_click(feature):
                                          "in Deutschland beobachteten Wert bewertet"], 
                                          delay = {"show": 20, "hide": 50}, target = "item-irradiation-score"),
                             html.Span("Rang: ", style={"color": "grey"}), irradiation_rank, "/", max_ranks["irradiation_rank"]
-        ]
-        
-        card_content_sources = [
-            dcc.Link("OpenStreetMap", href = "https://www.openstreetmap.org/", target="_blank"), ", ",
+                        ]),
+                    ], class_name="mt-1 h-60"),
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H4("Quellen", className="card-title"), 
+                            html.Div([
+                                dcc.Link("OpenStreetMap", href = "https://www.openstreetmap.org/", target="_blank"), ", ",
                                 dcc.Link("DOP20: GeoBasis-DE/LGB", href = "https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=7a503f0f-db46-4772-80e3-b27733fd7acd", target="_blank"), ", ",
                                 dcc.Link("DGM01: GeoBasis-DE/LGB", href = "https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=414f568f-639b-4b5a-ba92-57fdac396799", target="_blank"), ", ",
                                 dcc.Link("GADM", href = "https://gadm.org/data.html", target="_blank"), ", ",
-                                dcc.Link("CM SAF", href = "https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002", target="_blank"), html.Br()
+                                dcc.Link("CM SAF", href = "https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002", target="_blank"), html.Br(),
+                            ], style = {"font-size": "0.8rem"})
+                        ]),
+                    ], class_name="mt-1 h-40")
+                ], md = {"size": 4}, xs = {"size": 12})
+            ], class_name="m-1")
         ]
-        return card_content_overall, card_footer_overall, card_content_land_cover, card_content_terrain, card_content_grid, card_content_irradiation, card_content_sources
+
     else:
-        raise PreventUpdate()
+        return dbc.Row()
     
 # loading the data on grid access
 grid = pd.read_csv("ds_project/modules/dashboard/assets/BB_ps_auxiliary.csv")
