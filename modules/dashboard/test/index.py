@@ -4,13 +4,13 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 # import all pages in the app
-from app import app
+from app import app, path_directory
 from apps import karte, rohdaten, home
 
 #hardcoded paths
 # logo from https://www.vectorstock.com/royalty-free-vector/road-sun-shine-logo-vector-17131606
 import base64
-with open("/home/jan/Uni/DS-Project/modules/dashboard/test/apps/assets/RoadToRenewables.jpg", "rb") as file:
+with open(path_directory + "apps/assets/SolarExit_logo.jpeg", "rb") as file:
     logo = "data:image/jpg;base64, {}".format(base64.b64encode(file.read()).decode("utf-8"))
 
 
