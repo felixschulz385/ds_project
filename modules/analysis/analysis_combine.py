@@ -1,10 +1,10 @@
-from modules.analysis.analysis_abstract import analysis_abstract 
+#from modules.analysis.analysis_abstract import analysis_abstract 
 import os, re, shutil
 import numpy as np
 import pandas as pd
 import geopandas as gpd
 
-class analysis_combine(analysis_abstract): #
+class analysis_combine(): #analysis_abstract
     """
     A class combining all previously gathered data for use in the final dashboard
     
@@ -19,7 +19,7 @@ class analysis_combine(analysis_abstract): #
                  storage_directory = "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data"):
         self.storage_directory = storage_directory
     
-    def analyze(self, polygons, municipalities, economic_model, out_dir):
+    def analyze(self, polygons, economic_model, out_dir):
         """
         
         A function getting the best possible value for yearly irradiation from the SARAH data for each polygon
@@ -33,11 +33,34 @@ class analysis_combine(analysis_abstract): #
         # get the driveway boundaries
         driveways = gpd.read_file(polygons)
         
+        # clean
+        driveways.drop(columns = ["group", "access", "area", "bicycle", "bicycle_road", "bridge", "busway", "cycleway", "foot", "footway", "highway", "int_ref", "junction", "lanes", "lit", "maxspeed", "motorcar", "motorroad", "motor_vehicle", "name", "oneway", "overtaking", "path", "passing_places", "psv", "ref", "service", "segregated", "sidewalk", "smoothness", "surface", "tracktype", "tunnel", "turn", "width", "timestamp", "version", "tags", "osm_type", "group_id"], inplace = True)
+        
         # get the municipality boundaries
-        municipalities = gpd.read_file(municipalities)
+        municipalities = gpd.read_file(self.storage_directory + "/borders/gadm41_DEU_3.json")
+        
+        # fix names
+        municipalities["NAME_3"] = municipalities["NAME_3"].replace({r"BernaubeiBerlin": "Bernau bei Berlin",
+                                                   r"BrandenburganderHavel": "Brandenburg an der Havel",
+                                                   r"KönigsWusterhausen": "Königs Wusterhausen",
+                                                   r"MärkischeHeide": "Märkische Heide",
+                                                   r"NeuenhagenbeiBerlin": "Neuenhagen bei Berlin",
+                                                   r"RüdersdorfbeiBerlin": "Rüdersdorf bei Berlin",
+                                                   r"GranseeundGemeinden": "Gransee und Gemeinden",
+                                                   r"SchöneichebeiBerlin": "Schöneiche bei Berlin",
+                                                   r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
         
         # get state name
         state_name = driveways.link_id.str.extract(r"(\w\w(?=_))")[0].unique()[0]
+        
+         # read the kreis data
+        kreis = gpd.read_file(self.storage_directory + "/borders/gadm41_DEU_2.json").to_crs(25833)
+        
+        # fix names
+        kreis["NAME_2"] = kreis["NAME_2"].replace({r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex = True)
+        
+        # filter for state
+        kreis = kreis.loc[(kreis.HASC_2.str.extract(r'((?<=DE\.)..(?=\.))') == state_name)[0], :]
         
         # reset output directory
         if os.path.exists(f"{out_dir}/assets"):
@@ -67,42 +90,51 @@ class analysis_combine(analysis_abstract): #
         driveways['suitable_area'] = driveways['geometry'].area
         # get the irradiation score
         driveways["irradiation_score"] = driveways.irradiation.apply(lambda x: (142.19999695 - x) / (142.19999695 - 108.40000153))
-        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "min", ascending = False)
+        driveways["irradiation_rank"] = driveways.irradiation_score.rank(method = "min", na_option = "bottom", ascending = False)
         # get the distance score
         driveways["distance_score"] = driveways["distance_substation"].apply(lambda x: (driveways["distance_substation"].max() - x) / (driveways["distance_substation"].max() - driveways["distance_substation"].min()))
-        driveways["distance_rank"] = driveways.distance_score.rank(method = "min", ascending = False)
+        driveways["distance_rank"] = driveways.distance_score.rank(method = "min", na_option = "bottom", ascending = False)
         # get the land cover score
-        driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road"]] = driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road"]].fillna(0)
+        driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road", "lc_unknown"]] =\
+            driveways[["lc_background", "lc_agriculture", "lc_forest", "lc_building", "lc_road", "lc_unknown"]].fillna(0)
         driveways["land_cover_total_pixels"] = driveways["lc_background"] + driveways["lc_agriculture"] + driveways["lc_forest"] + driveways["lc_building"] + driveways["lc_road"]
         driveways["land_cover_share_good"] = (driveways["lc_background"] + driveways["lc_agriculture"]) / driveways["land_cover_total_pixels"]
         driveways["land_cover_share_restricted"] = driveways["lc_forest"] / driveways["land_cover_total_pixels"]
         driveways["land_cover_share_prohibted"] = (driveways["lc_building"] + driveways["lc_road"]) / driveways["land_cover_total_pixels"]
         driveways["land_cover_score"] = driveways["land_cover_share_good"] + 0.2 * driveways["land_cover_share_restricted"]
-        driveways["land_cover_rank"] = driveways.land_cover_score.rank(method = "min", ascending = False)
+        driveways["land_cover_rank"] = driveways.land_cover_score.rank(method = "min", na_option = "bottom", ascending = False)
+        driveways["no_land_cover"] = (((driveways["land_cover_score"] == 0) | (driveways["land_cover_score"].isna())))
         # get the terrain score
-        driveways["terrain_score"] = 1 - (driveways["terrain_roughness"] / 90)
-        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "min", ascending = False)
-
+        driveways[["terrain_roughness"]] = driveways[["terrain_roughness"]].fillna(0)
+        driveways["terrain_score"] = (1 - driveways["terrain_roughness"] / 90)
+        driveways["terrain_rank"] = driveways.terrain_score.rank(method = "min", na_option = "bottom", ascending = False)
+        driveways["no_terrain"] = (((driveways["terrain_score"] == 1) | (driveways["terrain_score"].isna())))
+        
         # get the overall score
-        driveways["overall_score"] = (economic_model["irradiation"] * driveways["irradiation_score"] + 
+        driveways["overall_score"] = 0
+        driveways["overall_score"][((~driveways["no_land_cover"]) & (~driveways["no_terrain"]))] =\
+            (economic_model["irradiation"] * driveways["irradiation_score"] + 
                             economic_model["distance"] * driveways["distance_score"] +
                             economic_model["terrain"] * driveways["terrain_score"] +
                             economic_model["land_cover"] * driveways["land_cover_score"])
-        driveways["overall_rank"] = driveways.overall_score.rank(method = "min", ascending = False)
+        driveways["overall_score"][((~driveways["no_land_cover"]) & (driveways["no_terrain"]))] =\
+            (economic_model["irradiation"] * driveways["irradiation_score"] + 
+                            economic_model["distance"] * driveways["distance_score"] +
+                            economic_model["land_cover"] * driveways["land_cover_score"]) /\
+                                (economic_model["irradiation"] + economic_model["distance"] + economic_model["land_cover"])
+        driveways["overall_score"][((driveways["no_land_cover"]) & (~driveways["no_terrain"]))] =\
+            (economic_model["irradiation"] * driveways["irradiation_score"] + 
+                            economic_model["distance"] * driveways["distance_score"] +
+                            economic_model["terrain"] * driveways["terrain_score"]) /\
+                                (economic_model["irradiation"] + economic_model["distance"] + economic_model["terrain"])
+        driveways["overall_score"][((driveways["no_land_cover"]) & (driveways["no_terrain"]))] =\
+            (economic_model["irradiation"] * driveways["irradiation_score"] + 
+                            economic_model["distance"] * driveways["distance_score"]) /\
+                                (economic_model["irradiation"] + economic_model["distance"])
+        driveways["overall_rank"] = driveways.overall_score.rank(method = "min", na_option = "bottom", ascending = False)
         
         # add municipality information
-        driveways = driveways.sjoin(municipalities[["geometry", "NAME_3"]], predicate = "intersects").drop(columns = "index_right")
-        
-        # fix names
-        driveways.NAME_3 = driveways.NAME_3.replace({r"BernaubeiBerlin": "Bernau bei Berlin",
-                                                   r"BrandenburganderHavel": "Brandenburg an der Havel",
-                                                   r"KönigsWusterhausen": "Königs Wusterhausen",
-                                                   r"MärkischeHeide": "Märkische Heide",
-                                                   r"NeuenhagenbeiBerlin": "Neuenhagen bei Berlin",
-                                                   r"RüdersdorfbeiBerlin": "Rüdersdorf bei Berlin",
-                                                   r"GranseeundGemeinden": "Gransee und Gemeinden",
-                                                   r"SchöneichebeiBerlin": "Schöneiche bei Berlin",
-                                                   r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
+        driveways = driveways.sjoin(municipalities[["geometry", "NAME_3"]], predicate = "intersects").drop(columns = "index_right").reset_index(drop = True)
         
         # export the results as polygons
         driveways.to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_polygons_final.json")
@@ -115,23 +147,17 @@ class analysis_combine(analysis_abstract): #
             if (tmp.loc[x[~x.isna()].index, "suitable_area"].sum() != 0):
                 return np.average(x[~x.isna()], weights = tmp.loc[x[~x.isna()].index, "suitable_area"])
         
-        # read the kreis data
-        kreis = gpd.read_file(self.storage_directory + "/borders/gadm41_DEU_2.json").to_crs(25833)
-        # fix names
-        kreis.NAME_2 = kreis.NAME_2.replace({r"([a-zß])([A-Z]|\()": r"\1 \2"}, regex=True)
-        # filter for brandenburg
-        kreis = kreis.loc[(kreis.HASC_2.str.extract(r'((?<=DE\.)..(?=\.))') == state_name)[0], :]
         # get mean statistics
         tmp = gpd.sjoin(kreis, driveways, how = 'inner', predicate = 'intersects').reset_index()
         tmp["link_id_individual"] = tmp.link_id + "_" + str(tmp.id)
-        kreis_stats = tmp.groupby('NAME_2').agg({'link_id_individual': "count",
+        kreis_stats = tmp.groupby('NAME_2', as_index = False).agg({'link_id_individual': "count",
                                                 'terrain_score': wm, 
                                                 'land_cover_score': wm, 
                                                 'irradiation_score': wm, 
                                                 'distance_score': wm,
-                                                'overall_score': wm}).reset_index()
+                                                'overall_score': wm})
         # export
-        pd.merge(kreis[["NAME_2", "HASC_2", "geometry"]], kreis_stats, left_on = 'NAME_2', right_on = 'NAME_2', how = 'left').\
+        pd.merge(kreis[["NAME_2", "HASC_2", "geometry"]], kreis_stats, on = 'NAME_2', how = 'left').\
             to_crs(4326).to_file(f"{out_dir}/assets/{state_name}_kreis_final.json", driver = 'GeoJSON')
         
         ##
@@ -139,13 +165,13 @@ class analysis_combine(analysis_abstract): #
         
         # get mean statistics
         driveways["link_id_individual"] = tmp.link_id + "_" + str(tmp.id)
-        gemeinde_stats = driveways.reset_index().groupby('NAME_3').agg({'suitable_area': "sum",
-                                                    'link_id_individual': "count",
-                                                'terrain_score': wm, 
-                                                'land_cover_score': wm, 
-                                                'irradiation_score': wm, 
-                                                'distance_score': wm,
-                                                'overall_score': wm}).reset_index()
+        gemeinde_stats = driveways.groupby('NAME_3', as_index = False).agg({'suitable_area': "sum",
+                                                                        'link_id_individual': "count",
+                                                                        'terrain_score': wm, 
+                                                                        'land_cover_score': wm, 
+                                                                        'irradiation_score': wm, 
+                                                                        'distance_score': wm,
+                                                                        'overall_score': wm}).reset_index()
         # filter for brandenburg
         state_name_long = kreis.NAME_1.unique()[0]
         # filter for brandenburg and export
@@ -176,6 +202,6 @@ if __name__ == "__main__":
     c_analysis_combine = analysis_combine()
     c_analysis_combine.analyze("/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/OSM/processed/brandenburg_polygons.geojson",
                                "/pfs/work7/workspace/scratch/tu_zxobe27-ds_project/data/borders/gadm41_DEU_4.json",
-                               {"irradiation": 0.15, "distance": 0.25, "terrain": .1},
+                               {"irradiation": 0.15, "distance": 0.25, "terrain": .1, "land_cover": 0.5},
                                "/pfs/data5/home/tu/tu_tu/tu_zxobe27/ds_project/ds_project/modules/dashboard/data")
 """
