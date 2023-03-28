@@ -1,6 +1,6 @@
-------------------------------
+----------------------------------------
 Introduction
-------------------------------
+----------------------------------------
 
 The "Solar Exit" project contributes to identifying and illustrating previously unused areas for the expansion of renewable energies. To this end, a prototype website is already online, which is intended to show interested citizens and municipalities in a visually appealing way where there is potential for the expansion of solar energy in Germany.
 
@@ -11,12 +11,54 @@ The site on the federal road B28 in Lustnau is now the city’s largest source o
 
 While the website currently evaluates the potential in the state of Brandenburg, this project builds on the general research question of how much potential for such green energy is untapped in Germany. This website presents the results for Brandenburg, in which we use artificial intelligence (deep-learning methods) to identify areas similar to those in Tübingen on aerial photographs and display them interactively on a map for free exploration. However, we would like to extend these analyses to the entire country.
 
-------------------------------
+----------------------------------------
 Motivation
-------------------------------
+----------------------------------------
 
 Global climate change and the ongoing energy crisis are shaping a rethink in the German energy industry.
 
-After years of heavy reliance on coal and gas (in 2010, 25% of Germany's energy mix was sourced in this way (BDEW, 2022)), climate pledges have forced politicians to accelerate the expansion of renewables (Bundesregierung, 2022). The construction of onshore wind farms is repeatedly stopped by local resistance (DW, 2022). The installed capacity of photovoltaics (PV), by contrast, has grown steadily and rapidly in recent years (Bundesnetzagentur, 2022). One of their major advantages is the much smaller footprint of the panels compared to wind turbines. This allows PV systems to be installed in places that are hardly used for any other purpose. This is particularly evident in the popular version on house roofs, several German federal states have even made the installation of PV on new buildings mandatory (Imolauer, 2022).
+After years of heavy reliance on coal and gas (in 2010, 25\% of Germany's energy mix was sourced in this way (BDEW, 2022)), climate pledges have forced politicians to accelerate the expansion of renewables (Bundesregierung, 2022). The construction of onshore wind farms is repeatedly stopped by local resistance (DW, 2022). The installed capacity of photovoltaics (PV), by contrast, has grown steadily and rapidly in recent years (Bundesnetzagentur, 2022). One of their major advantages is the much smaller footprint of the panels compared to wind turbines. This allows PV systems to be installed in places that are hardly used for any other purpose. This is particularly evident in the popular version on house roofs, several German federal states have even made the installation of PV on new buildings mandatory (Imolauer, 2022).
 
 Other areas with little alternative use are artificial lakes, parking lots as well as central reservation of motorways. This project focuses on brownfields that form in highway turn-offs. These can be road links on the one hand, but also slip roads of service areas.
+
+----------------------------------------
+Map
+----------------------------------------
+
+The online application including an interactive map serves as an information desk for municipalities and citizens. The map is the centrepiece of our work, which is intended to be an alternative to complex reports. We seek to make the results of our research question accessible to a broader audience in a user-friendly manner and hope to make a contribution to the energy transition.
+
+On the interactive OpenStreetMap map, all ears are recorded and highlighted in colour. All entities are given a score. In addition, aggregated scores are also provided for municipalities and districts. Below the map, the information box shows all relevant information for the selected entity in more detail, enabling the user to understand how the assessment is composed and what special features an entity has.
+
+----------------------------------------
+Result Table
+----------------------------------------
+
+An interactive results table provides an alternative presentation of the results with which selected ears can be searched, filtered and compared. This is facilitated by the filter options for the state and administrative district variables, as well as the sorting options for the evaluation of the land, terrain, solar potential and grid connection. Furthermore, a colour-coded underlining of the score column facilitates the search for prospective sites.
+
+----------------------------------------
+Project Structure
+----------------------------------------
+
+This project aims to provide a comprehensive overview of the potential of equipping highway turn-offs in Germany with photovoltaics. Using the latest GIS software and deep learning techniques, we identify these turn-offs and assess their suitability. Starting with an evaluation for the federal state of Brandenburg, we plan to extend our analyses to the entire road network in Germany.
+
+In our preliminary research, we work with high-resolution aerial photographs from national surveying offices with an precision of 0.2 x 0.2 square meters. Furthermore, we process data from Open Street Map, which labels road segments of highway turn-offs. These road segments are combined in a radius of 500 meter in order to preserve all shapes created by the turn-offs. In Brandenburg, 206 motorway and federal road junctions are marked and 1,253 individual polygons are identified. This results in a total potentially unused area of over 6.5 square kilometres. It is followed by a texture analysis of these identified polygons using the aerial photographs. A neural network recognises trees and other objects within the ears and can assign the following categories with pixel precision: High vegetation, low vegetation, road, buildings and agriculture. We exploit a pre-trained segmentation model and tailor it to our question using pixel-wise labelled training data from China. The additional training allows the model to recognise organic structures and therefore landscape features of the ears particularly well. A segmentation model divides an image into regions belonging to different semantic classes. On the one hand it can classify each pixel in an image, on the other hand the model provides a pixel-precise mask for each object, e.g. building, or each unit, e.g. agriculture. In order to make the potential of the areas comparable, we quantify it in a score from various parameters. The visualisation of the results is provided in a map, which is integrated in Dash-Leaflet.
+
+----------------------------------------
+Composition of the Overall Evaluation
+----------------------------------------
+
+The overall ranking is composed of various driving factors for one-off costs due to construction and operating costs. Their importance is explained in the following overview:
+
+Criteria	Weighting
+Land cover	50 %
+Terrain	10 %
+Solar potential	15 %
+Grid connection	25 %
+
+Land cover is determined by the percentage distribution of relevant ecological or infrastructural factors, such as trees or buildings, within an ear. The nature in a potential ear is under protection (§ 44 Naturschutz Gesetz) and a PV plant is an encroachment on the landscape. Woody plants such as shrubs and trees that have to be removed for the construction of a PV plant are assessed with different values for nature (e.g. depending on size, age). The nature that has to make way for a PV plant has to be compensated elsewhere. Compensation areas must be equivalent or greater and geographically close. If landowner of the ear has no free compensation areas, they need to be must be rented. Note that the environmental impact assessment of an ear of corn determines not only the one-off cost of establishing a compensation area, but also the long-term profitability of the PV system. Consequently, land cover is an important economic factor and is included at 50\% in our overall assessment.
+
+The distance to the nearest grid connection point is another cost-intensive factor in the overall assessment, as the laying of lines can involve complex drilling. Therefore, we weight the distance between the potential area for PV plants and the nearest grid connection point by 25\%.
+
+The construction of a solar park is ideally carried out on an even surface with few differences in height. Even a steep but even surface poses no challenge. Nevertheless, unevenness can be offset by compensating for these height differences during the construction of the solar park and merely imply a more elaborate design. Uneven surfaces are therefore not economically unattractive, so the terrain conditions are weighted at 10\%.
+
+The solar potential takes into account the hours of sunshine that prevail on average at a given area. Although more is better, modern PV systems are technically sophisticated enough that a system in Germany is always economically attractive. In the overall assessment, solar potential accounts for 15\%.
