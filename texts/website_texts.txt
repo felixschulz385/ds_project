@@ -1,0 +1,22 @@
+------------------------------
+Introduction
+------------------------------
+
+The "Solar Exit" project contributes to identifying and illustrating previously unused areas for the expansion of renewable energies. To this end, a prototype website is already online, which is intended to show interested citizens and municipalities in a visually appealing way where there is potential for the expansion of solar energy in Germany.
+
+Climate commitments of the German government require a transition to renewable energies. However, the construction of wind parks often encounters opposition from local communities and varies in difficulty due to the diverse federal regulations. Therefore, this project makes use of the advantage of flexibility in the construction of solar plants. Moreover, the areas under consideration in this project are selected in such a way that no conflicts of interest arise with regard to alternative land uses.
+
+Among them are the so-called "ears" that form in exits of highways. The project focuses on potential areas along federal roads and motorways. Highway turn-offs are unattractive for most uses as they are surrounded by a busy road. Therefore, many of these ears are not subject to any meaningful economic use and it can also be discussed how valuable the areas are for nature. The Tübingen pilot project "Lustnauer Ohren" has consolidated the idea of using these areas for the expansion of solar energy. 
+The site on the federal road B28 in Lustnau is now the city’s largest source of green electricity.
+
+While the website currently evaluates the potential in the state of Brandenburg, this project builds on the general research question of how much potential for such green energy is untapped in Germany. This website presents the results for Brandenburg, in which we use artificial intelligence (deep-learning methods) to identify areas similar to those in Tübingen on aerial photographs and display them interactively on a map for free exploration. However, we would like to extend these analyses to the entire country.
+
+------------------------------
+Motivation
+------------------------------
+
+Global climate change and the ongoing energy crisis are shaping a rethink in the German energy industry.
+
+After years of heavy reliance on coal and gas (in 2010, 25% of Germany's energy mix was sourced in this way (BDEW, 2022)), climate pledges have forced politicians to accelerate the expansion of renewables (Bundesregierung, 2022). The construction of onshore wind farms is repeatedly stopped by local resistance (DW, 2022). The installed capacity of photovoltaics (PV), by contrast, has grown steadily and rapidly in recent years (Bundesnetzagentur, 2022). One of their major advantages is the much smaller footprint of the panels compared to wind turbines. This allows PV systems to be installed in places that are hardly used for any other purpose. This is particularly evident in the popular version on house roofs, several German federal states have even made the installation of PV on new buildings mandatory (Imolauer, 2022).
+
+Other areas with little alternative use are artificial lakes, parking lots as well as central reservation of motorways. This project focuses on brownfields that form in highway turn-offs. These can be road links on the one hand, but also slip roads of service areas.
