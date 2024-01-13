@@ -1,18 +1,16 @@
 import pandas as pd
-import geopandas as gpd
 import dash
-from dash import Dash, html, Output, Input, dcc, dash_table, callback
+from dash import html, Output, Input, dcc, callback
 from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
-from dash_extensions.enrich import html, DashProxy
-from dash_extensions.javascript import arrow_function, assign
+from dash_extensions.javascript import arrow_function
 import plotly.express as px
 import base64
 
 dash.register_page(__name__)
 
-path_directory = "ds_project/modules/dashboard/deployment/"
+path_directory = "/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard/deployment/"
 
 ###
 # Driveways
@@ -29,9 +27,6 @@ polygon_geojson = dl.GeoJSON(url=f"assets/BB_polygons_final.json",
                                                           "fillOpacity": 0.2, 
                                                           "opacity": 1, 
                                                           "weight": 3}))
-
-# get maximum ranks
-max_ranks = 1184
 
 ###
 # Gemeinde
@@ -57,6 +52,24 @@ kreis_geojson = dl.GeoJSON(url=f"assets/BB_kreis_final.json",  # url to geojson 
                      options={"style":{"color":"grey", "opacity": 0.5, "fillOpacity": 0.2, "weight": 1}},
                      hoverStyle=arrow_function({"color":"purple", "fillColor":"grey", "fillOpacity": 0.2, "opacity": 0.8, "weight": 2}),
                      id="kreis_geojson")
+
+###
+# Get map tiles
+###
+
+tile_layer = dl.TileLayer(url="http://193.196.53.65:8070/styles/basic-preview/{z}/{x}/{y}.png", id="tile_layer", 
+                          attribution = '&copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, &copy; <a href="https://gadm.org">GADM</a>')
+
+
+###
+# Auxiliary information
+###
+
+# get maximum ranks
+max_ranks = 1184
+
+# loading the data on grid access
+grid = pd.read_csv(path_directory + "assets/BB_ps_auxiliary.csv")
 
 # define animated icons
 def svg_handler(type, score, size = 70):
@@ -192,17 +205,13 @@ def get_info(feature=None):
                             "Durchschnittliche Wertung: --", html.Br(),
                             "Klicke für weitere Statistiken auf eine Potentialfläche!"]
 info = html.Div(children=get_info(), id="info", className="info",
-                style={"position": "absolute", "top": "10px", "right": "50px", "z-index": "1000"})
-
-
-tile_layer = dl.TileLayer(url="https://tile.openstreetmap.org/{z}/{x}/{y}.png", id="tile_layer", 
-                          attribution = '&copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, &copy; <a href="https://gadm.org">GADM</a>')
+                style={"position": "absolute", "top": "10px", "right": "50px", "zIndex": "1000"})
 
 ###
 # Interactivity
 ###
 
-# a lagged state variable
+# some state variable caching
 state = {"zoom": 7, "clickedPolygon": "", "image_avail": False, "image_avail_terrain": False}
 
 # a callback that controls what polygons are shown
@@ -227,7 +236,6 @@ def func(viewport):
 def info_hover(feature):
     return get_info(feature)
 
-
 # a callback that updates the info panel
 @callback([Output("card-content-overall", "children"),
                Output("card-footer-overall", "children"),
@@ -239,7 +247,9 @@ def info_hover(feature):
                Output("card-content-sources", "children")], 
               Input("polygon_geojson", "click_feature"))
 def info_click(feature):
+    
     if feature is not None:
+        
         # try and get core data
         state["clickedPolygon"] = [feature["properties"]["link_id"], feature["properties"]["id"]]
         link_name = "Nr. " + str(int(feature["properties"]["link_id"][-4:])) + \
@@ -249,36 +259,6 @@ def info_click(feature):
         overall_score = "{:.2f}".format(feature["properties"]["overall_score"])
         overall_rank = "{:.0f}".format(feature["properties"]["overall_rank"])
         
-        # get image of terrain
-        try:
-            with open(path_directory + "assets/imagery/height_profile/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
-                terrain_image = "data:image/png;base64,{}".format(
-                    base64.b64encode(image_file.read()).decode('ascii'))
-                state["image_avail_terrain"] = True
-        except:
-            terrain_image = None
-            state["image_avail_terrain"] = False
-        
-        # terrain data
-        terrain_roughness = "{:.2f}".format(
-            feature["properties"]["terrain_roughness"])
-        terrain_high = "{:.2f}".format(feature["properties"]["terrain_high"])
-        terrain_low = "{:.2f}".format(feature["properties"]["terrain_low"])
-        terrain_score = "{:.2f}".format(feature["properties"]["terrain_score"])
-        terrain_rank = "{:.0f}".format(feature["properties"]["terrain_rank"])
-        # get distance data
-        
-        grid_subset = grid.loc[((grid["link_id"] == state["clickedPolygon"][0]) & (grid["id"] == state["clickedPolygon"][1])),:].sort_values("distance_substation")
-        distance = "{} in {:.0f}m".format(grid_subset["municipality"][grid_subset.distance_substation.idxmin()], grid_subset["distance_substation"][grid_subset.distance_substation.idxmin()])
-        distance_score = "{:.2f}".format(
-            feature["properties"]["distance_score"])
-        distance_rank = "{:.0f}".format(feature["properties"]["distance_rank"])
-        # get irradiation data
-        irradiation = "{:.2f}".format(feature["properties"]["irradiation"])
-        irradiation_score = "{:.2f}".format(
-            feature["properties"]["irradiation_score"])
-        irradiation_rank = "{:.0f}".format(feature["properties"]["irradiation_rank"])
-        #
         # get orthoimage
         try:
             with open(path_directory + "assets/imagery/rgb/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
@@ -289,12 +269,33 @@ def info_click(feature):
                     html.Img(src = rgb_image, width = 300), html.Br(),
                     html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})
                 ])
+            #
+            graphic_land_cover = html.Img(src = svg_handler("land cover", feature["properties"]["land_cover_score"]),
+                                          id = "sym-land", style = {"cursor": "pointer"})
         except:
             state["image_avail"] = False
             card_content_image = html.Div([
                     html.Span("ⓘ", style = {"font-size": "4rem"}), html.Br(),
                     html.Span("Für diese Fläche ist keine Bildinformation vorhanden")
                 ])
+            #
+            graphic_land_cover = html.Img(src = svg_handler("land cover", 1),
+                                          id = "sym-land", style = {"cursor": "pointer"})
+            
+        # get image of terrain
+        try:
+            with open(path_directory + "assets/imagery/height_profile/" + feature["properties"]["link_id"] + "_" + str(int(feature["properties"]["id"])) + ".png", "rb") as image_file:
+                terrain_image = "data:image/png;base64,{}".format(
+                    base64.b64encode(image_file.read()).decode('ascii'))
+                state["image_avail_terrain"] = True
+            graphic_terrain = html.Img(src = svg_handler("terrain", feature["properties"]["terrain_score"]),
+                                       id = "sym-terrain", style = {"cursor": "pointer"})
+        except:
+            terrain_image = None
+            state["image_avail_terrain"] = False
+            graphic_terrain = html.Img(src = svg_handler("terrain", 1),
+                                       id = "sym-terrain", style = {"cursor": "pointer"})
+        
         card_content_overall = [
                     html.B(link_name), html.Br(),
                             html.Span("Potentialfläche in m²: ", style={
@@ -310,12 +311,6 @@ def info_click(feature):
                             html.Span("Gesamtrang: ", style={"color": "grey"}), overall_rank, "/", max_ranks
             ]
         #
-        if state["image_avail"]:
-            graphic_land_cover = html.Img(src = svg_handler("land cover", feature["properties"]["land_cover_score"]),
-                                id = "sym-land", style = {"cursor": "pointer"})
-        if not state["image_avail"]:
-            graphic_land_cover = html.Img(src = svg_handler("land cover", 1),
-                                id = "sym-land", style = {"cursor": "pointer"})
         card_footer_overall = [
                             html.Img(src = svg_handler("overall", feature["properties"]["overall_score"]),
                                 id = "sym-overall", style = {"cursor": "pointer"}),
@@ -324,8 +319,7 @@ def info_click(feature):
                             graphic_land_cover,
                             dbc.Tooltip(["Wertung der", html.Br(), "Landbedeckung"], target = "sym-land"),
                             #
-                            html.Img(src = svg_handler("terrain", feature["properties"]["terrain_score"]),
-                                id = "sym-terrain", style = {"cursor": "pointer"}),
+                            graphic_terrain,
                             dbc.Tooltip(["Wertung der", html.Br(), "Geländebeschaffenheit"], target = "sym-terrain"),
                             #
                             html.Img(src = svg_handler("grid", feature["properties"]["distance_score"]),
@@ -336,15 +330,15 @@ def info_click(feature):
                                 id = "sym-irradiation", style = {"cursor": "pointer"}),
                             dbc.Tooltip(["Wertung des", html.Br(), "Sonnenpotentials"], target = "sym-irradiation")
                         ]
-            
-        # get land cover data
+        
+        # add land cover information if available
         if state["image_avail"]:
-            land_cover_share_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"])
+            #land_cover_share_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"])
             land_cover_m2_good = "{:.2f}".format(feature["properties"]["land_cover_share_good"] * feature["properties"]["suitable_area"])
-            land_cover_share_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"])
+            #land_cover_share_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"])
             land_cover_m2_restricted = "{:.2f}".format(feature["properties"]["land_cover_share_restricted"] * feature["properties"]["suitable_area"])
-            land_cover_share_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"])
-            land_cover_m2_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"] * feature["properties"]["suitable_area"])
+            #land_cover_share_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"])
+            #land_cover_m2_prohibted = "{:.2f}".format(feature["properties"]["land_cover_share_prohibted"] * feature["properties"]["suitable_area"])
             land_cover_score = "{:.2f}".format(feature["properties"]["land_cover_score"])
             land_cover_rank = "{:.0f}".format(feature["properties"]["land_cover_rank"])
             # make pie chart
@@ -359,12 +353,12 @@ def info_click(feature):
                                                 "Hoher Bewuchs": "#004c00",
                                                 "Landwirtschaft": "#c3b091",
                                                 "Straße": "#F6BE00"})
-                        
+            # add layout
             fig.layout.update()
             fig.update_traces(textposition='inside', hovertemplate = "%{label}")
             fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide', hovermode = "x",
                             margin = dict(l=0, r=0, t=0, b=0))
-            
+            #
             card_content_land_cover = [
                 dbc.Row([       
                                 dbc.Col([html.Span("Vollständig nutzbare Fläche in m²: ", style={"color": "grey"}), land_cover_m2_good, html.Br(),
@@ -375,10 +369,18 @@ def info_click(feature):
                                 dbc.Col([dcc.Graph(id = "graph", figure = fig, style={
                                         'width': '300px', 'height': '200px'})], width={"size": 6})
                             ])]
+        # add placeholder if not available
         if not state["image_avail"]:
             card_content_land_cover = dbc.Row([html.Span("ⓘ", style = {"font-size": "1.5rem"}), html.Span("Mangels Bildinformation kann die Landbedeckung nicht beurteilt werden")], class_name = "text-center")
-        #
+        
+        # add terrain data if available
         if state["image_avail_terrain"]:
+            terrain_roughness = "{:.2f}".format(
+                feature["properties"]["terrain_roughness"])
+            terrain_high = "{:.2f}".format(feature["properties"]["terrain_high"])
+            terrain_low = "{:.2f}".format(feature["properties"]["terrain_low"])
+            terrain_score = "{:.2f}".format(feature["properties"]["terrain_score"])
+            terrain_rank = "{:.0f}".format(feature["properties"]["terrain_rank"])
             card_content_terrain = dbc.Row([
                                     dbc.Col([html.Img(src = terrain_image, width = 300), html.Br(),
                                             html.Span("© GeoBasis-DE/LGB", style = {"font-size": "0.8rem"})], width={
@@ -394,9 +396,16 @@ def info_click(feature):
                                                         delay = {"show": 20, "hide": 50}, target = "item-terrain-score"),
                                             html.Span("Rang: ", style={"color": "grey"}), terrain_rank, "/", max_ranks], width={"size": 6})
                                 ])
-            
+        # add placeholder if not available
         if not state["image_avail"]:
             card_content_terrain = dbc.Row([html.Span("ⓘ", style = {"font-size": "1.5rem"}), html.Span("Mangels Terraininformation kann die Geländebeschaffenheit nicht beurteilt werden")], class_name = "text-center")
+    
+        # get distance data
+        grid_subset = grid.loc[((grid["link_id"] == state["clickedPolygon"][0]) & (grid["id"] == state["clickedPolygon"][1])),:].sort_values("distance_substation")
+        distance = "{} in {:.0f}m".format(grid_subset["municipality"][grid_subset.distance_substation.idxmin()], grid_subset["distance_substation"][grid_subset.distance_substation.idxmin()])
+        distance_score = "{:.2f}".format(
+            feature["properties"]["distance_score"])
+        distance_rank = "{:.0f}".format(feature["properties"]["distance_rank"])
         #
         card_content_grid = [
             html.Span("Nächster Netzanschlusspunkt: ", style={
@@ -410,6 +419,12 @@ def info_click(feature):
                             html.Span("Rang: ", style={"color": "grey"}), distance_rank, "/", max_ranks, html.Br(),
                             dbc.Button("Nächstgelegene 3 Netzanschlusspunkte anzeigen", id="show-grid-access", color="primary", class_name="mr-1 float-end", style={"margin-top": "10px"})
                             ]
+        
+        # get irradiation data
+        irradiation = "{:.2f}".format(feature["properties"]["irradiation"])
+        irradiation_score = "{:.2f}".format(
+            feature["properties"]["irradiation_score"])
+        irradiation_rank = "{:.0f}".format(feature["properties"]["irradiation_rank"])
         #
         card_content_irradiation = [
             html.Span("Durchschnittliche Wh/m² pro Monat: ",
@@ -422,6 +437,7 @@ def info_click(feature):
                             html.Span("Rang: ", style={"color": "grey"}), irradiation_rank, "/", max_ranks
         ]
         
+        #
         card_content_sources = [
             dcc.Link("OpenStreetMap", href = "https://www.openstreetmap.org/", target="_blank"), ", ",
                                 dcc.Link("DOP20: GeoBasis-DE/LGB", href = "https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=7a503f0f-db46-4772-80e3-b27733fd7acd", target="_blank"), ", ",
@@ -429,12 +445,11 @@ def info_click(feature):
                                 dcc.Link("GADM", href = "https://gadm.org/data.html", target="_blank"), ", ",
                                 dcc.Link("CM SAF", href = "https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002", target="_blank"), html.Br()
         ]
+        
         return card_content_overall, card_footer_overall, card_content_image, card_content_land_cover, card_content_terrain, card_content_grid, card_content_irradiation, card_content_sources
     else:
         raise PreventUpdate()
     
-# loading the data on grid access
-grid = pd.read_csv(path_directory + "assets/BB_ps_auxiliary.csv")
 
 # a callback that add lines to the closest grid points
 @callback([Output("grid-access", "children"), Output("show-grid-access", "children")], Input("show-grid-access", "n_clicks")) #
@@ -456,10 +471,10 @@ def info_click(n):
 layout = html.Div([
     dbc.Row([
         dbc.Col([dl.Map(children = [tile_layer, 
-                                    dl.Pane([kreis_geojson], id = "regional-polygon", style = {"zIndex": 200}), 
-                                    dl.Pane([polygon_geojson], style = {"zIndex": 300}), 
-                                    dl.Pane(dl.FeatureGroup(id = "grid-access"), style = {"zIndex": 350}),
-                                    dl.Pane([info], style = {"zIndex": 400})], 
+                                    dl.Pane([kreis_geojson], name = "regional-polygon", id = "regional-polygon", style = {"z-index": 200}), 
+                                    dl.Pane([polygon_geojson], name = "highway-polygon", style = {"z-index": 300}), 
+                                    dl.Pane(dl.FeatureGroup(id = "grid-access"), name = "grid-access-pane", style = {"z-index": 350}),
+                                    dl.Pane([info], name = "info-pane", style = {"z-index": 400})], 
                         style={'width': '100%', 'height': '75vh', 'margin': "auto", "display": "block"},
                         id = "map", center = [52.47288, 13.39777], zoom = 7)],
                 width = {"size": 12, "offset": 0})

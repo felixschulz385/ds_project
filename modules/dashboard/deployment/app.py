@@ -4,6 +4,8 @@ from dash import Dash, Input, Output, html, dcc, callback
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
+from waitress import serve
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -17,7 +19,7 @@ app = dash.Dash(__name__,
                 external_stylesheets = external_stylesheets, 
                 use_pages = True)
 
-path_directory = "ds_project/modules/dashboard/deployment/"
+path_directory = "/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard/deployment/"
 
 #hardcoded paths
 # logo from https://www.vectorstock.com/royalty-free-vector/road-sun-shine-logo-vector-17131606
@@ -51,4 +53,5 @@ app.layout = html.Div([
 ])
 
 if __name__ == '__main__':
-	app.run_server(host="0.0.0.0", port=8050, debug = False)
+	#serve(app.server, host='0.0.0.0', port = 8050)
+    app.run(host='0.0.0.0', port = 8050, debug = True)

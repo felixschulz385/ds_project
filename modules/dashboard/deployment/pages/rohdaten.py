@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import pandas as pd
+import geopandas as gpd
 import numpy as np
 
 import dash
@@ -10,40 +11,50 @@ import dash_mantine_components as dmc
 
 dash.register_page(__name__)
 
-path_directory = "ds_project/modules/dashboard/deployment/"
+path_directory = "/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard/deployment/"
 
 # --------------
 # import data
 # --------------
 # kreise
-kreise_df = pd.read_csv(path_directory + 'assets/kreise_df.csv')
-# rename and drop columns
-kreise_df = kreise_df.drop(columns=['Unnamed: 0']).rename(columns={
+#kreise_df = pd.read_csv(path_directory + 'assets/kreise_df.csv')
+kreise_df = gpd.read_file(path_directory + 'assets/BB_kreis_final.json').drop(columns = ["geometry", "HASC_2", "link_id_individual"])
+# rename  columns
+kreise_df = kreise_df.rename(columns={
     'NAME_1': 'Bundesland',
-    'NAME_2': 'Landkreis',
+    #'NAME_2': 'Landkreis',
     'terrain_score': 'Geländebeschaffenheit',
-    'irridation_score': 'Sonnenpotential',
+    'irradiation_score': 'Sonnenpotential',
     'distance_score': 'Netzanschluss',
-    'overall_score': 'Gesamtwertung'
+    'overall_score': 'Gesamtwertung',
+    'land_cover_score': 'Landbewertung'
     })
+kreise_df["Bundesland"] = "Brandenburg"
+
 # Reorder the columns
-column_order = ['Landkreis', 'Bundesland', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
+column_order = ['Landkreis', 'Bundesland', 'Landbewertung', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
 kreise_df = kreise_df.reindex(columns=column_order)
 
 # gemeinde
-gemeinde_df = pd.read_csv(path_directory + 'assets/gemeinde_df.csv')
+#gemeinde_df = pd.read_csv(path_directory + 'assets/gemeinde_df.csv')
+gemeinde_df = gpd.read_file(path_directory + 'assets/BB_gemeinde_final.json').drop(columns = ["geometry", "link_id_individual"])
 # rename and drop columns
-gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0.1', 'Unnamed: 0', 'suitable_area']).rename(columns={
-    'NAME_1': 'Bundesland',
+
+# FELIX -> change here !!!
+gemeinde_df = gemeinde_df.rename(columns={
+    #'NAME_1': 'Bundesland',
     'NAME_2': 'Landkreis',
     'NAME_3': 'Gemeinde',
+    'land_cover_score': 'Landbewertung', # change here !!!
     'terrain_score': 'Geländebeschaffenheit',
-    'irridation_score': 'Sonnenpotential',
+    'irradiation_score': 'Sonnenpotential',
     'distance_score': 'Netzanschluss',
     'overall_score': 'Gesamtwertung'
     })
+gemeinde_df["Bundesland"] = "Brandenburg"
+
 # Reorder the columns
-column_order = ['Gemeinde', 'Landkreis', 'Bundesland', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
+column_order = ['Gemeinde', 'Landkreis', 'Bundesland', 'Landbewertung', 'Geländebeschaffenheit', 'Sonnenpotential', 'Netzanschluss', 'Gesamtwertung']
 gemeinde_df = gemeinde_df.reindex(columns=column_order)
 
 # find unique values without NaN values and prep for dropdown

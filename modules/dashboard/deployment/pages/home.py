@@ -5,13 +5,14 @@ from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
 import pandas as pd
+import geopandas as gpd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
 dash.register_page(__name__, path='/')
 
-path_directory = "ds_project/modules/dashboard/deployment/"
+path_directory = "/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard/deployment/"
 
 # import data
 kreise_df = pd.read_csv(path_directory + 'assets/kreise_df.csv')
@@ -38,6 +39,7 @@ gemeinde_df = gemeinde_df.drop(columns=['Unnamed: 0']).rename(columns={
     'suitable_area': 'Landbedeckung'
     })
 gemeinde_df = gemeinde_df.dropna(subset=['Landkreis'])
+
 
 # create sunburst plot
 Ohren_sunburst = px.sunburst(gemeinde_df, path=['Bundesland', 'Landkreis', 'Gemeinde'], values='Gesamtwertung')
@@ -244,9 +246,10 @@ content = html.Div([
                     dbc.Row([dbc.Col([
                         dcc.Markdown('''
                             Auf dieser ersten Seite unserer Webseite leiten wir unser Projekt ein und geben Interessenten alle notwendigen Informationen an die Hand, um unser interaktives Dashboard nutzen zu können.
-Dazu gehören die Hintergründe sowohl zu diesem Projekt als auch zu dem realisierten Tübinger Projekt,
-die Motivation, uns mit diesem Thema auseinanderzusetzen und die Erklärung, wie genau wir das Projekt angegangen sind und welche Lösungsansätze wir uns zu diesem Pilotprojekt herausgesucht haben.
-                        ''')
+                            
+                            Dazu gehören die Hintergründe sowohl zu diesem Projekt als auch zu dem realisierten Tübinger Projekt,
+                            die Motivation, uns mit diesem Thema auseinanderzusetzen und die Erklärung, wie genau wir das Projekt angegangen sind und welche Lösungsansätze wir uns zu diesem Pilotprojekt herausgesucht haben.
+                            ''')
                     ], width=7),
                         dbc.Col([
                             html.H5("Funktionalitäten"),
