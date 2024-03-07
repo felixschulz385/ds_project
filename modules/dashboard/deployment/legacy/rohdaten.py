@@ -9,7 +9,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 
-dash.register_page(__name__)
+#dash.register_page(__name__)
 
 path_directory = "/home/ubuntu/ext_drive/dashboard/ds_project/modules/dashboard/deployment/"
 

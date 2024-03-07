@@ -192,7 +192,7 @@ def svg_handler(type, score, size = 70):
 def get_info(feature=None):
     header = [html.H4("Gemeindestatistiken")]
     if not feature:
-        return header + [html.P("Zoome für weitere Statistiken\nauf eine Gemeinde")]
+        return header + [html.P("Zoomen Sie für weitere Statistiken\nauf eine Gemeinde")]
     if feature["properties"]["NAME_3"] is not None:
         if feature["properties"]["suitable_area"] is not None:
             return header + [html.B(feature["properties"]["NAME_3"]), html.Br(),
@@ -566,7 +566,7 @@ layout = html.Div([
                         ]),
                     ], class_name="mt-1 h-40")
                 ], id = "col-irradiation-sources", md = {"size": 6}, xs = {"size": 12})
-            ], class_name="m-1")
+            ], class_name="mt-1 mx-1 mb-4")
         ], id = "info-panel")             
 ])
 
