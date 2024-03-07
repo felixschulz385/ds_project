@@ -11,27 +11,15 @@ content = html.Div(
             [
                 dbc.Col(
                     [
-                        html.Div(
-                            [
-                                dbc.Button(
-                                    "Zurück zu 'Über'",
-                                    href="/about",
-                                    className="btn btn-secondary",
-                                ),
-                                dbc.Button(
-                                    "Zur Karte",
-                                    href="/karte",
-                                    className="btn btn-secondary",
-                                ),
-                            ],
-                            className="d-flex justify-content-between",
-                        )
+                        dbc.Button(
+                            "Zurück",
+                            href="/",
+                            className="btn btn-secondary",
+                        ),
                     ],
+                    className="order-1 mb-4", 
+                    xs=4, md = 2,
                 ),
-            ]
-        ),
-        dbc.Row(
-            [
                 dbc.Col(
                     [
                         dcc.Markdown(
@@ -219,11 +207,22 @@ content = html.Div(
                             ],
                             className="table my-2",
                         ),
-                    ],
-                    width={"size": 6, "offset": 3},
+                    ], 
+                    xs=12, md = 8,
+                    className="order-3 order-md-2",
                 ),
-            ],
-            style={"margin-top": "-2rem"},
+                dbc.Col(
+                    [
+                        dbc.Button(
+                            "Zur Karte",
+                            href="/karte",
+                            className="btn btn-secondary",
+                        ),
+                    ],
+                    className="order-2 order-md-3 mb-4", 
+                    xs={"size": 4, "offset": 4}, md={"size": 2, "offset":0},
+                ),
+            ]
         ),
     ],
     className="px-4 py-4",

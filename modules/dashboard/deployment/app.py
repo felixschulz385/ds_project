@@ -34,7 +34,7 @@ with open(path_directory + "assets/logo.png", "rb") as file:
 navbar = dbc.NavbarSimple(
     children=[
         dbc.NavItem(dbc.NavLink("Karte", href="/karte")),
-        dbc.NavItem(dbc.NavLink("Über", href="/about")),
+        #dbc.NavItem(dbc.NavLink("Über", href="/about")),
     ],
     brand=dbc.Row(
         [
@@ -48,6 +48,7 @@ navbar = dbc.NavbarSimple(
     sticky="top",
     fluid=True,
     className="px-3",
+    expand=True,
 )
 
 footer = html.Footer(
@@ -86,5 +87,5 @@ app.layout = html.Div(
 
 
 if __name__ == "__main__":
-    # serve(app.server, host='0.0.0.0', port = 8050)
-    app.run(host="0.0.0.0", port=8050, debug=False)
+    serve(app.server, host='0.0.0.0', port = 8050)
+    #app.run(host="0.0.0.0", port=8050, debug=True)

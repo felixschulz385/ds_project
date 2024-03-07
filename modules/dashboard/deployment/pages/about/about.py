@@ -28,7 +28,8 @@ content = html.Div(
                                     className="h-100 p-5 bg-light rounded-3",
                                 )
                             ],
-                            width=6,
+                            md = {"size": 6}, xs = {"size": 12},
+                            className = " mb-4",
                         ),
                         dbc.Col(
                             [
@@ -48,10 +49,10 @@ content = html.Div(
                                     className="h-100 p-5 bg-light rounded-3",
                                 )
                             ],
-                            width=6,
+                            md = {"size": 6}, xs = {"size": 12},
+                            className = " mb-4",
                         ),
                     ],
-                    className="mb-4",
                 ),
                 dbc.Row(
                     [

@@ -4,33 +4,21 @@ import dash_bootstrap_components as dbc
 
 dash.register_page(__name__)
 
-content = html.Div(
+content = dbc.Container(
     [
         dbc.Row(
             [
                 dbc.Col(
                     [
-                        html.Div(
-                            [
-                                dbc.Button(
-                                    "Zurück zu 'Über'",
-                                    href="/about",
-                                    className="btn btn-secondary",
-                                ),
-                                dbc.Button(
-                                    "Zur Karte",
-                                    href="/karte",
-                                    className="btn btn-secondary",
-                                ),
-                            ],
-                            className="d-flex justify-content-between",
-                        )
+                        dbc.Button(
+                            "Zurück",
+                            href="/",
+                            className="btn btn-secondary"
+                        ),
                     ],
+                    className="order-1 mb-4", 
+                    xs=4, md = 2,
                 ),
-            ]
-        ),
-        dbc.Row(
-            [
                 dbc.Col(
                     [
                         dcc.Markdown(
@@ -49,14 +37,25 @@ content = html.Div(
                             In diesem Internetauftritt präsentieren wir die Ergebnisse mehrerer Monate der Analyse im Land Brandenburg. Wir hoffen, damit die Aufmerksamkeit für diese Idee außerhalb der Region Tübingen zu steigern.
                             """
                         )
+                    ], 
+                    xs=12, md = 8,
+                    className="order-3 order-md-2",
+                ),
+                dbc.Col(
+                    [
+                        dbc.Button(
+                            "Zur Karte",
+                            href="/karte",
+                            className="btn btn-secondary"
+                        ),
                     ],
-                    width={"size":6, "offset":3}
+                    className="order-2 order-md-3 mb-4", 
+                    xs={"size": 4, "offset": 4}, md={"size": 2, "offset":0},
                 ),
             ],
-            style={"margin-top": "-2rem"},
         ),
     ],
-    className="px-4 py-4",
+    className="d-flex justify-content-baseline align-items-start px-4 py-4 mw-100"
 )
 
 layout = html.Div([content])
