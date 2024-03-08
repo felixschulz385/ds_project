@@ -24,13 +24,95 @@ content = html.Div(
                     [
                         dcc.Markdown(
                             """
-                            # Die technische Umsetzung
+                            # Technische Umsetzung
                             
                             Mit diesem Projekt möchten wir einen Überblick über das Potenzial der Ausstattung von Autobahnabfahrten in Deutschland mit Photovoltaik zu geben.
                             Mithilfe modernster GIS-Software und Machine-Learning identifizieren wir Autobahnabfahrten und bewerten deren Eignung zum Ausbau für Solarenergie.
-                            Beginnend mit einem Fokus auf das Bundesland Brandenburg planen wir, unsere Modelle auf das gesamte Straßennetz Deutschlands auszuweiten.
+                            Beginnend mit einem Fokus auf das Bundesland Brandenburg planen wir, unsere Forschung auf das gesamte Straßennetz Deutschlands auszuweiten.
+                            
+                            #### Faktoren und Wertung
+                            
+                            Anhand mehrerer Experteninterviews identifizierte unser Team die größten Kostenfaktoren der Nutzung einer Fläche in Autobahnauffahrten für Photovoltaik. Die Elemente unserer Analyse sind die Landbedeckung, die Geländebeschaffenheit, das Sonnenpotential und der Netzanschluss. Um dem Nutzer einen schnellen Überblick zu verschaffen, fassen wir die Eignung in diesen Aspekten in einem Wertungssystem zusammen. 
+                            
+                            Die Relevanz der Landbedeckung ergibt sich aus §44 des Naturschutzgesetzes. Per Gesetz müssen sogenannte Ausgleichsflächen geschaffen werden, wenn in die Natur eingegriffen wird. Deshalb dokumentieren wir die prozentuale Verteilung relevanter ökologischer oder infrastruktureller Faktoren, wie Bäume oder Gebäude, innerhalb einer Fläche. Die Informationen zur Landbedeckung werden von uns eigens für dieses Projekt im unten erläuterten Verfahren erfasst. Die zentrale Datenquellen in diesem Prozess sind die [Luftaufnahmen DOP20](https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=7a503f0f-db46-4772-80e3-b27733fd7acd) des Landes Brandenburg. Aufgrund des hohen Aufwands für den Erwerb von Ausgleichsflächen ist die Landbedeckung ein wichtiger ökonomischer Faktor und fließt mit einem Anteil von 50% in unsere Gesamtbewertung ein.              
+
+                            Der Bau von Netzwerkinfrastruktur ist regelmäßig mit hohem finanziellen Aufwand verbunden. Wir modellieren diese Kosten näherungsweise über die Distanz zum nächstgelegenen Netzanschlusspunkt. Die Daten hierzu beziehen wir aus [OpenStreetMap](https://www.openstreetmap.org/).
+                            Diese gewichten wir zu 25%. 
+
+                            Durch ungleichmäßige Bodenbeschaffenheit entstehen im Bauprozess Kosten. Das Höhenprofil analysieren wir anhand der Geländedaten [DGM01](https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=414f568f-639b-4b5a-ba92-57fdac396799) des Landes Brandenburg. Diesen Faktor gewichten wir zu 10%.
+
+                            Das Sonnenpotential berücksichtigt die durchschnittlichen jährlichen Sonnenstunden, die auf einer bestimmten Fläche zu erwarten sind. Wir errechnen diesen Wert anhand des Datensatzes [CM SAF](https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002) der Organisation EUMETSAT. Da auf Freiflächen wie der in Autobahnauffahrten mit einem neutralen Steigungsprofil eine optimale Ausrichtung nahezu immer möglich ist, bewerten wir diesen Faktor zu nur 15%.
                             """
                         ),
+                        html.Table(
+                            [
+                                html.Caption("Faktoren, Datenquellen und Gewichtung in Gesamtwertung"),
+                                html.Thead(
+                                    html.Tr(
+                                        [
+                                            html.Th("Kriterien"),
+                                            html.Th("Datenquelle"),
+                                            html.Th(
+                                                "Gewichtung",
+                                                style={"text-align": "right"},
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                html.Tbody(
+                                    [
+                                        html.Tr(
+                                            [
+                                                html.Td("Landbedeckung"),
+                                                html.Td(html.A("DOP20: GeoBasis-DE/LGB", href="https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=7a503f0f-db46-4772-80e3-b27733fd7acd")),
+                                                html.Td(
+                                                    "50 %",
+                                                    style={"text-align": "right"},
+                                                ),
+                                            ]
+                                        ),
+                                        html.Tr(
+                                            [
+                                                html.Td("Geländebeschaffenheit"),
+                                                html.Td(html.A("DGM01: GeoBasis-DE/LGB", href="https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductPreview&PRODUCTID=414f568f-639b-4b5a-ba92-57fdac396799")),
+                                                html.Td(
+                                                    "10 %",
+                                                    style={"text-align": "right"},
+                                                ),
+                                            ]
+                                        ),
+                                        html.Tr(
+                                            [
+                                                html.Td("Sonnenpotential"),
+                                                html.Td(html.A("CM SAF", href="https://doi.org/10.5676/EUM_SAF_CM/SARAH/V002")),
+                                                html.Td(
+                                                    "15 %",
+                                                    style={"text-align": "right"},
+                                                ),
+                                            ]
+                                        ),
+                                        html.Tr(
+                                            [
+                                                html.Td("Netzanschluss"),
+                                                html.Td(html.A("CM SAF", href="https://www.openstreetmap.org/")),
+                                                html.Td(
+                                                    "25 %",
+                                                    style={"text-align": "right"},
+                                                ),
+                                            ]
+                                        ),
+                                    ]
+                                ),
+                            ],
+                            className="table my-2",
+                        ),
+                        dcc.Markdown(
+                            """
+                            #### Unser Evaluationsprozess
+                            """,
+                            className="mb-2"
+                        ),
+                    
                         dmc.Timeline(
                             active=5,
                             bulletSize=15,
@@ -126,86 +208,12 @@ content = html.Div(
                             """
                             #### Das Neuronale Netzwerk
                             
-                            > TODO: Marvin
+                            Im Kern unserer Forschung steht ein künstliches neuronales Netzwerk, das anhand von Luftaufnahmen der Autobahnauffahrten Karten der Bebauung und Vegetation erstellt. Dafür ordnet das Modell in einem komplexen Verfahren einzelne Bildpixel einer der folgenden 5 Klassen zu: Gebäude, Straße, Landwirtschaft, Hoher Bewuchs, und Niedriger Bewuchs. 
                             
-                            #### Gesamtwertung
-                            
-                            Der Gesamtwertung setzt sich aus den Komponenten Landbedeckung, Geländebeschaffenheit, Sonnenpotential und Netzanschluss zusammen. 
-                            
-                            Die Relevanz der Landbedeckung ergibt sich aus §44 des Naturschutzgesetzes. 
-                            Per Gesetz müssen sogenannte Ausgleichsflächen geschaffen werden, 
-                            wenn in die Natur eingegriffen wird. 
-                            Deshalb dokumentieren wir die prozentuale Verteilung relevanter ökologischer oder 
-                            infrastruktureller Faktoren, wie Bäume oder Gebäude, innerhalb einer Fläche. 
-                            Aufgrund des hohen Aufwands für den Erwerb von Ausgleichsflächen ist die Landbedeckung ein 
-                            wichtiger ökonomischer Faktor und fließt mit einem Anteil von 50% in unsere Gesamtbewertung ein.              
+                            Technisch stellt unser adaptiertes [DeepLabV3-Modell](https://arxiv.org/abs/1706.05587v3) einen Durchbruch in der Bodenbedeckungssegmentierung dar. Ursprünglich konzipiert für die detaillierte Objekterkennung und basierend auf dem leistungsfähigen [ResNet101](https://arxiv.org/abs/1512.03385)-Netzwerk, wurde das Modell mit dem [COCO](https://cocodataset.org/#home)-Datensatz vortrainiert, einem umfassenden Bilderkorpus zur Mustererkennung. Darauf aufbauend haben wir das Modell mit dem [LoveDA](https://paperswithcode.com/dataset/loveda)-Datensatz weiter für Problemstellungen der Bodenbedeckungssegmentierung in Städten und ländlichen Regionen optimiert. Diese Anpassung erlaubt es uns, die vegetative Bedeckung an Autobahnausfahrten detailgenau zu quantifizieren.
 
-                            Der Bau von Netzwerkinfrastruktur ist regelmäßig mit hohem finanziellen Aufwand verbunden. 
-                            Wir modellieren diese Kosten näherungsweise über die Distanz zum nächstgelegenen Netzanschlusspunkt. 
-                            Diese gewichten wir zu 25%. 
-
-                            Durch ungleichmäßige Bodenbeschaffenheit entstehen im Bauprozess Kosten. Diesen Faktor gewichten wir zu 10%.
-
-                            Das Sonnenpotential berücksichtigt die Sonnenstunden, die auf einer bestimmten Fläche 
-                            durchschnittlich zur Verfügung stehen. Da in der Regel eine Photovoltaikanlage in Deutschland 
-                            immer ökonomisch attraktiv ist, bewerten wir diesen Faktor zu nur 15%.
-                            """
-                        ),
-                        html.Table(
-                            [
-                                html.Thead(
-                                    html.Tr(
-                                        [
-                                            html.Th("Kriterien"),
-                                            html.Th(
-                                                "Gewichtung",
-                                                style={"text-align": "right"},
-                                            ),
-                                        ]
-                                    )
-                                ),
-                                html.Tbody(
-                                    [
-                                        html.Tr(
-                                            [
-                                                html.Td("Landbedeckung"),
-                                                html.Td(
-                                                    "50 %",
-                                                    style={"text-align": "right"},
-                                                ),
-                                            ]
-                                        ),
-                                        html.Tr(
-                                            [
-                                                html.Td("Geländebeschaffenheit"),
-                                                html.Td(
-                                                    "10 %",
-                                                    style={"text-align": "right"},
-                                                ),
-                                            ]
-                                        ),
-                                        html.Tr(
-                                            [
-                                                html.Td("Sonnenpotential"),
-                                                html.Td(
-                                                    "15 %",
-                                                    style={"text-align": "right"},
-                                                ),
-                                            ]
-                                        ),
-                                        html.Tr(
-                                            [
-                                                html.Td("Netzanschluss"),
-                                                html.Td(
-                                                    "25 %",
-                                                    style={"text-align": "right"},
-                                                ),
-                                            ]
-                                        ),
-                                    ]
-                                ),
-                            ],
-                            className="table my-2",
+                            Das Ergebnis: Ein Werkzeug, das die Segmentierung von Vegetation in Luftbildern automatisiert und genaue Daten für städtische und ökologische Anwendungen liefert. Unser adaptiertes DeepLabV3 Model hilft, grüne Flächen zu messen und zu analysieren, und unterstützt so aktiv die nachhaltige Stadt- und Landschaftsplanung sowie den Naturschutz.
+                            """,
                         ),
                     ], 
                     xs=12, md = 8,
